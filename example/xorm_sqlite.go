@@ -6,6 +6,7 @@ import (
     "os"
     "time"
     "fmt"
+    _ "github.com/smtp-http/tiango/datastorage"
 )
 
 
@@ -23,6 +24,12 @@ type User struct {
 
 
 
+
+//====================================================================================
+
+
+
+
 // 启动程序后就执行
 func main() {
    // 创建 ORM 引擎与数据库
@@ -33,7 +40,12 @@ func main() {
 	}
 
    // 同步结构体与数据表,和python的 migrate 一样同步数据库
+
 	if err = hrengine.Sync2(new(User)); err != nil {
+		log.Fatalf("Fail to sync database: %v\n", err)
+	}
+
+	if err = hrengine.Sync2(new(MaterialsTable)); err != nil {
 		log.Fatalf("Fail to sync database: %v\n", err)
 	}
    // 创建日志 可以选用
@@ -47,8 +59,10 @@ func main() {
 	xorm.NewSimpleLogger(f)
 
 	user := new(User)
-	user.Name = "myname"
-	u, err := hrengine.Id(20).Update(user)
+	user.Name = "myname11"
+	user.Age = 12
+
+	u, err := hrengine.Id(1).Update(user)
 	if err != nil{
 		fmt.Println(err) 
 	} else {
