@@ -5,7 +5,7 @@ import (
 	//"reflect"
 )
 
-//================================================================================
+//===================================== Prodection info ===========================================
 
 
 type ProductInformation struct {
@@ -36,13 +36,34 @@ type ProductInformation struct {
 
 type ProductInformationTable struct {
 	Id 		int32 			`xorm:"id"`
-	AminusB  float32 		`xorm:"AminusB"`
-	BminusD  float32 		`xorm:"BminusD"`
-	EminusF  float32 		`xorm:"EminusF"`
-	GminusH  float32 		`xorm:"GminusH"`
-	Result   bool       	`xorm:"Result"`
+	
+	
+	DomSupplier 		string 		`xorm:"DomSupplier"`
+	DpSupplier 			string 		`xorm:"DpSupplier"`
+	ProductCn 			int32 		`xorm:"ProductCn"`
+	LRstationDifference string 		`xorm:"LRstationDifference"`
+
+	A_B 				float64 	`xorm:"A_B"`
+	B_D 				float64 	`xorm:"B_D"`
+	E_F 				float64 	`xorm:"E_F"`
+	G_H 				float64 	`xorm:"G_H"`
+
+
+	Result  		 	bool 		`xorm:"Result"`
+	Angle 				float64 	`xorm:"Angle"`
+	SizeA 				float64 	`xorm:"SizeA"`
+	SizeB 				float64 	`xorm:"SizeB"`
+	SizeC 				float64 	`xorm:"SizeC"`
+	SizeD 				float64 	`xorm:"SizeD"`
+	SizeE 				float64 	`xorm:"SizeE"`
+	SizeF 				float64 	`xorm:"SizeF"`
+	SizeG 				float64 	`xorm:"SizeG"`
+	SizeH				float64 	`xorm:"SizeH"`
 }
 
+
+
+//=========================== DP size ===========================================
 
 type DpSize struct {
 	DomSupplier 		string 		`json:"DomSupplier"`
@@ -65,12 +86,25 @@ type DpSize struct {
 }
 
 
+
+
+//=========================== Environment ==========================================
+
 type Environment struct {                          // from modbus
 	Temperature 		float64 	
 	Pressure 			float64 
 }
 
 
+
+
+
+
+
+
+//=================================================== param ============================================================
+
+//============================ MaterialInputGuidance ================================
 type ParamMaterialInputGuidance struct {
 	PhotoDelay 					float64 	`json:"PhotoDelay"`
 	CompensationX1 				float64 	`json:"CompensationX1"`
@@ -104,6 +138,10 @@ type ParamMaterialInputGuidance struct {
 	MaterialInputDelay 			float64 	`json:"MaterialInputDelay"`
 }
 
+
+
+
+//
 type ParamSendMaterial struct {
 	SendMaterialSpeed 	float64 	`json:"SendMaterialSpeed"`
 	StopDelay 			float64 	`json:"StopDelay"`
