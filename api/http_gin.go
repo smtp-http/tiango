@@ -32,6 +32,10 @@ func (s *GinServer)StartHttpServer() {
         return
     }
 
+    if err := s.Proxy.SyncTable(new(datastorage.DomSizeTable)); err != nil {
+        fmt.Printf("Fail to sync database DomSizeTable: %v\n", err)
+        return
+    }
     
     if err := s.Proxy.SyncTable(new(datastorage.ParamMaterialInputGuidanceTable)); err != nil {
         fmt.Printf("Fail to sync database ParamMaterialInputGuidanceTable: %v\n", err)
@@ -75,16 +79,20 @@ func Middleware(c *gin.Context) {
     fmt.Println("this is a middleware!")
 }
 
-type ProductInformationReq struct {
-    ReqId   int32                          `json:"req_id"`
-    Data    datastorage.ProductInformation  `json:"data"`
-}
-
 type JsonRes struct {
     ReqId   int32       `json:"req_id"`
     ResCode int32       `json:"rescode"`
     Result  string      `json:"result"`
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type ProductInformationReq struct {
+    ReqId   int32                          `json:"req_id"`
+    Data    datastorage.ProductInformation  `json:"data"`
+}
+
+
 
 func (s *GinServer)Productinformation(c *gin.Context) {
 
@@ -139,13 +147,110 @@ func (s *GinServer)Productinformation(c *gin.Context) {
     
 }
 
-func (s *GinServer)Dpsize(c *gin.Context) {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type DpSizeReq struct {
+    ReqId   int32               `json:"req_id"`
+    Data    datastorage.DpSize  `json:"data"`
+}
 
+func (s *GinServer)Dpsize(c *gin.Context) {
+    var dpsize DpSizeReq
+    err := c.BindJSON(&dpsize)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: dpsize.ReqId, ResCode: 1,Result:"dpsize bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+
+        var dpsizeTable datastorage.DpSizeTable
+        dpsizeTable.DomSupplier            =   dpsize.Data.DomSupplier
+        dpsizeTable.DpSupplier             =   dpsize.Data.DpSupplier 
+        dpsizeTable.ProductCn              =   dpsize.Data.ProductCn
+        dpsizeTable.LRstationDifference    =   dpsize.Data.LRstationDifference
+
+        dpsizeTable.Length                 =   dpsize.Data.Length
+        dpsizeTable.Width                  =   dpsize.Data.Width
+        dpsizeTable.LongSideAngle          =   dpsize.Data.LongSideAngle
+        dpsizeTable.ShortSideAngle         =   dpsize.Data.ShortSideAngle
+        dpsizeTable.Angle1                 =   dpsize.Data.Angle1
+        dpsizeTable.Angle2                 =   dpsize.Data.Angle2
+        dpsizeTable.Angle3                 =   dpsize.Data.Angle3
+        dpsizeTable.Angle4                 =   dpsize.Data.Angle4
+        dpsizeTable.DX                     =   dpsize.Data.DX
+        dpsizeTable.DY                     =   dpsize.Data.DY
+        dpsizeTable.DR                     =   dpsize.Data.DR
+       
+
+        var res JsonRes
+        
+
+        e := s.Proxy.Insert(dpsizeTable)
+        if e != nil {
+            fmt.Printf("DpSize data insert error!\n")
+            res = JsonRes{ReqId: dpsize.ReqId, ResCode: 2,Result:"DpSize data insert err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: dpsize.ReqId, ResCode: 0,Result:""}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
 
 }
 
-func (s *GinServer)Domsize(c *gin.Context) {
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type DomSizeReq struct {
+    ReqId   int32               `json:"req_id"`
+    Data    datastorage.DomSize  `json:"data"`
+}
+
+func (s *GinServer)Domsize(c *gin.Context) {
+    var domsize DomSizeReq
+    err := c.BindJSON(&domsize)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: domsize.ReqId, ResCode: 1,Result:"domsize bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+
+        var domsizeTable datastorage.DomSizeTable
+        domsizeTable.DomSupplier            =   domsize.Data.DomSupplier
+        domsizeTable.DpSupplier             =   domsize.Data.DpSupplier 
+        domsizeTable.ProductCn              =   domsize.Data.ProductCn
+        domsizeTable.LRstationDifference    =   domsize.Data.LRstationDifference
+
+        domsizeTable.Length                 =   domsize.Data.Length
+        domsizeTable.Width                  =   domsize.Data.Width
+        domsizeTable.LongSideAngle          =   domsize.Data.LongSideAngle
+        domsizeTable.ShortSideAngle         =   domsize.Data.ShortSideAngle
+        domsizeTable.Angle1                 =   domsize.Data.Angle1
+        domsizeTable.Angle2                 =   domsize.Data.Angle2
+        domsizeTable.Angle3                 =   domsize.Data.Angle3
+        domsizeTable.Angle4                 =   domsize.Data.Angle4
+        domsizeTable.DX                     =   domsize.Data.DX
+        domsizeTable.DY                     =   domsize.Data.DY
+        domsizeTable.DR                     =   domsize.Data.DR
+       
+
+        var res JsonRes
+        
+
+        e := s.Proxy.Insert(domsizeTable)
+        if e != nil {
+            fmt.Printf("domsize data insert error!\n")
+            res = JsonRes{ReqId: domsize.ReqId, ResCode: 2,Result:"domsize data insert err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: domsize.ReqId, ResCode: 0,Result:""}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
 }
 
 func (s *GinServer)ParamMaterialInputGuidance(c *gin.Context) {

@@ -35,7 +35,7 @@ type ProductInformation struct {
 
 
 type ProductInformationTable struct {
-	Id 		int64 			//`xorm:"id"`
+	Id 		int64 			
 	
 	
 	DomSupplier 		string 		`xorm:"DomSupplier"`
@@ -88,7 +88,7 @@ type DpSize struct {
 }
 
 type DpSizeTable struct {
-	Id 					int64 		//`xorm:"id"` 
+	Id 					int64 		
 
 	DomSupplier 		string 		`xorm:"DomSupplier"`
 	DpSupplier 			string 		`xorm:"DpSupplier"`
@@ -109,6 +109,51 @@ type DpSizeTable struct {
 
 }
 
+//=========================== Dom size ===========================================
+
+
+
+type DomSize struct {
+	DomSupplier 		string 		`json:"DomSupplier"`
+	DpSupplier 			string 		`json:"DpSupplier"`
+	ProductCn 			int32 		`json:"ProductCn"`
+	LRstationDifference string 		`json:"LRstationDifference"`
+
+	Length 				float64 	`json:"Length"`
+	Width 				float64 	`json:"Width"`
+	LongSideAngle 		float64 	`json:"LongSideAngle"`
+	ShortSideAngle 		float64 	`json:"ShortSideAngle"`
+	Angle1 				float64 	`json:"Angle1"`
+	Angle2 				float64 	`json:"Angle2"`
+	Angle3 				float64 	`json:"Angle3"`
+	Angle4 				float64 	`json:"Angle4"`
+	DX 					float64 	`json:"DX"`
+	DY 					float64 	`json:"DY"`
+	DR 					float64 	`json:"DR"`
+
+}
+
+type DomSizeTable struct {
+	Id 					int64 		
+
+	DomSupplier 		string 		`xorm:"DomSupplier"`
+	DpSupplier 			string 		`xorm:"DpSupplier"`
+	ProductCn 			int32 		`xorm:"ProductCn"`
+	LRstationDifference string 		`xorm:"LRstationDifference"`
+
+	Length 				float64 	`xorm:"Length"`
+	Width 				float64 	`xorm:"Width"`
+	LongSideAngle 		float64 	`xorm:"LongSideAngle"`
+	ShortSideAngle 		float64 	`xorm:"ShortSideAngle"`
+	Angle1 				float64 	`xorm:"Angle1"`
+	Angle2 				float64 	`xorm:"Angle2"`
+	Angle3 				float64 	`xorm:"Angle3"`
+	Angle4 				float64 	`xorm:"Angle4"`
+	DX 					float64 	`xorm:"DX"`
+	DY 					float64 	`xorm:"DY"`
+	DR 					float64 	`xorm:"DR"`
+
+}
 
 //=========================== Environment ==========================================
 
@@ -162,7 +207,7 @@ type ParamMaterialInputGuidance struct {
 
 
 type ParamMaterialInputGuidanceTable struct {
-	Id 					int64 		//`xorm:"id"`
+	Id 					int64 		
 
 	PhotoDelay 					float64 	`xorm:"PhotoDelay"`
 	CompensationX1 				float64 	`xorm:"CompensationX1"`
@@ -244,7 +289,7 @@ type ParamSendMaterial struct {
 }
 
 type ParamSendMaterialTable struct {
-	Id 					int64 		//`xorm:"id"`
+	Id 					int64 		
 
 	SendMaterialSpeed 	float64 	`xorm:"SendMaterialSpeed"`
 	StopDelay 			float64 	`xorm:"StopDelay"`
