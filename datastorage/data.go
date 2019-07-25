@@ -35,7 +35,7 @@ type ProductInformation struct {
 
 
 type ProductInformationTable struct {
-	Id 		int64 			`xorm:"id"`
+	Id 		int64 			//`xorm:"id"`
 	
 	
 	DomSupplier 		string 		`xorm:"DomSupplier"`
@@ -88,7 +88,7 @@ type DpSize struct {
 }
 
 type DpSizeTable struct {
-	Id 					int64 		`xorm:"id"` 
+	Id 					int64 		//`xorm:"id"` 
 
 	DomSupplier 		string 		`xorm:"DomSupplier"`
 	DpSupplier 			string 		`xorm:"DpSupplier"`
@@ -162,7 +162,7 @@ type ParamMaterialInputGuidance struct {
 
 
 type ParamMaterialInputGuidanceTable struct {
-	Id 					int64 		`xorm:"id"`
+	Id 					int64 		//`xorm:"id"`
 
 	PhotoDelay 					float64 	`xorm:"PhotoDelay"`
 	CompensationX1 				float64 	`xorm:"CompensationX1"`
@@ -244,8 +244,8 @@ type ParamSendMaterial struct {
 }
 
 type ParamSendMaterialTable struct {
-	Id 					int64 		`xorm:"id"`
-	
+	Id 					int64 		//`xorm:"id"`
+
 	SendMaterialSpeed 	float64 	`xorm:"SendMaterialSpeed"`
 	StopDelay 			float64 	`xorm:"StopDelay"`
 
