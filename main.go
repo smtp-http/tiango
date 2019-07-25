@@ -15,5 +15,7 @@ func main(){
 
 	fmt.Printf("tiango: %v\n",port)
 
-	api.StartHttpServer()
+	server := &api.GinServer{}
+
+	server.StartHttpServer()
 }

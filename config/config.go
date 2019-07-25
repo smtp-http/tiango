@@ -14,6 +14,7 @@ import (
 type Configuration struct {
     HttpPort    string  `json:"http_port"`
     Version     string  `json:"version"`
+    DbName      string  `json:"db_name"`
 }
 
 
