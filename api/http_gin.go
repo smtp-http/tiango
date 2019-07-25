@@ -49,7 +49,7 @@ func (s *GinServer)StartHttpServer() {
     router := gin.Default()    //获得路由实例
 
     //添加中间件
-    router.Use(Middleware)
+    // router.Use(Middleware)
     //注册接口
     
     router.POST("/api/" + config.GetConfig().Version +"/productinformation", s.Productinformation)
@@ -75,22 +75,64 @@ func Middleware(c *gin.Context) {
     fmt.Println("this is a middleware!")
 }
 
+type ProductInformationReq struct {
+    ReqId   int32                          `json:"req_id"`
+    Data    datastorage.ProductInformation  `json:"data"`
+}
+
+type JsonRes struct {
+    ReqId   int32       `json:"req_id"`
+    ResCode int32       `json:"rescode"`
+    Result  string      `json:"result"`
+}
+
 func (s *GinServer)Productinformation(c *gin.Context) {
-    var proInfo datastorage.ProductInformation
+
+    var proInfo ProductInformationReq
     err := c.BindJSON(&proInfo)
     if err != nil {
-        
-        c.JSON(200, gin.H{"errcode": 400, "description": "Post Data Err"})
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: proInfo.ReqId, ResCode: 1,Result:"bind json error"}
+        c.JSON(200,res)
         return
     } else {
-        fmt.Println(proInfo)
-        type JsonHolder struct {
-            Id   int    `json:"id"`
-            Name string `json:"name"`
+        var proInfoTable datastorage.ProductInformationTable
+        proInfoTable.DomSupplier            =   proInfo.Data.DomSupplier
+        proInfoTable.DpSupplier             =   proInfo.Data.DpSupplier 
+        proInfoTable.ProductCn              =   proInfo.Data.ProductCn
+        proInfoTable.LRstationDifference    =   proInfo.Data.LRstationDifference
+
+        proInfoTable.A_B                    =   proInfo.Data.A_B
+        proInfoTable.B_D                    =   proInfo.Data.B_D
+        proInfoTable.E_F                    =   proInfo.Data.E_F
+        proInfoTable.G_H                    =   proInfo.Data.G_H
+
+
+        proInfoTable.Result                 =   proInfo.Data.Result
+        proInfoTable.Angle                  =   proInfo.Data.Angle
+        proInfoTable.SizeA                  =   proInfo.Data.SizeA
+        proInfoTable.SizeB                  =   proInfo.Data.SizeB
+        proInfoTable.SizeC                  =   proInfo.Data.SizeC
+        proInfoTable.SizeD                  =   proInfo.Data.SizeD
+        proInfoTable.SizeE                  =   proInfo.Data.SizeE
+        proInfoTable.SizeF                  =   proInfo.Data.SizeF
+        proInfoTable.SizeG                  =   proInfo.Data.SizeG
+        proInfoTable.SizeH                  =   proInfo.Data.SizeH
+
+
+        var res JsonRes
+        
+
+        e := s.Proxy.Insert(proInfoTable)
+        if e != nil {
+            fmt.Printf("ProInfo data insert error!\n")
+            res = JsonRes{ReqId: proInfo.ReqId, ResCode: 2,Result:"Proinfo data insert err!"}
+            return
         }
-        holder := JsonHolder{Id: 1, Name: "my name"}
+
+        res = JsonRes{ReqId: proInfo.ReqId, ResCode: 0,Result:""}
     //若返回json数据，可以直接使用gin封装好的JSON方法
-        c.JSON(http.StatusOK, holder)
+        c.JSON(http.StatusOK, res)
         return
     }
 
