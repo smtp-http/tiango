@@ -96,6 +96,7 @@ type ProductInformationReq struct {
 
 func (s *GinServer)Productinformation(c *gin.Context) {
 
+    c.Header("Access-Control-Allow-Origin", "*")
     var proInfo ProductInformationReq
     err := c.BindJSON(&proInfo)
     if err != nil {
@@ -154,6 +155,7 @@ type DpSizeReq struct {
 }
 
 func (s *GinServer)Dpsize(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
     var dpsize DpSizeReq
     err := c.BindJSON(&dpsize)
     if err != nil {
@@ -208,6 +210,7 @@ type DomSizeReq struct {
 }
 
 func (s *GinServer)Domsize(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
     var domsize DomSizeReq
     err := c.BindJSON(&domsize)
     if err != nil {
@@ -253,17 +256,156 @@ func (s *GinServer)Domsize(c *gin.Context) {
     }
 }
 
-func (s *GinServer)ParamMaterialInputGuidance(c *gin.Context) {
-    type JsonHolder struct {
-        Id   int    `json:"id"`
-        Name string `json:"name"`
-    }
-    holder := JsonHolder{Id: 1, Name: "my name"}
-    //若返回json数据，可以直接使用gin封装好的JSON方法
-    c.JSON(http.StatusOK, holder)
-    return
+
+
+
+//=======================================================================================================================
+
+type ParamMaterialInputReq struct {
+    ReqId   int32               `json:"req_id"`
+    Data    datastorage.ParamMaterialInputGuidance  `json:"data"`
 }
 
-func (s *GinServer)ParamSendMaterial(c *gin.Context) {
+func (s *GinServer)ParamMaterialInputGuidance(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
+    var paramMaterialInput ParamMaterialInputReq
+    err := c.BindJSON(&paramMaterialInput)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: paramMaterialInput.ReqId, ResCode: 1,Result:"paramMaterialInput bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
 
+        var paramMaterialInputGuidanceTable datastorage.ParamMaterialInputGuidanceTable
+        paramMaterialInputGuidanceTable.PhotoDelay             =   paramMaterialInput.Data.PhotoDelay
+        paramMaterialInputGuidanceTable.CompensationX1         =   paramMaterialInput.Data.CompensationX1 
+        paramMaterialInputGuidanceTable.CompensationY1         =   paramMaterialInput.Data.CompensationY1
+        paramMaterialInputGuidanceTable.CompensationR1         =   paramMaterialInput.Data.CompensationR1
+
+        paramMaterialInputGuidanceTable.CompensationX2         =   paramMaterialInput.Data.CompensationX2
+        paramMaterialInputGuidanceTable.CompensationY2         =   paramMaterialInput.Data.CompensationY2
+        paramMaterialInputGuidanceTable.CompensationR2         =   paramMaterialInput.Data.CompensationR2
+
+        paramMaterialInputGuidanceTable.CompensationX3         =   paramMaterialInput.Data.CompensationX3 
+        paramMaterialInputGuidanceTable.CompensationY3         =   paramMaterialInput.Data.CompensationY3
+        paramMaterialInputGuidanceTable.CompensationR3         =   paramMaterialInput.Data.CompensationR3
+
+        paramMaterialInputGuidanceTable.CompensationX4         =   paramMaterialInput.Data.CompensationX4 
+        paramMaterialInputGuidanceTable.CompensationY4         =   paramMaterialInput.Data.CompensationY4
+        paramMaterialInputGuidanceTable.CompensationR4         =   paramMaterialInput.Data.CompensationR4
+
+        paramMaterialInputGuidanceTable.MaterialInputReferenceX  =   paramMaterialInput.Data.MaterialInputReferenceX
+        paramMaterialInputGuidanceTable.MaterialInputReferenceY  =   paramMaterialInput.Data.MaterialInputReferenceY
+        paramMaterialInputGuidanceTable.MaterialInputReferenceZ  =   paramMaterialInput.Data.MaterialInputReferenceZ
+        paramMaterialInputGuidanceTable.MaterialInputReferenceR  =   paramMaterialInput.Data.MaterialInputReferenceR
+
+        paramMaterialInputGuidanceTable.FallingInitialSpeed      =   paramMaterialInput.Data.FallingInitialSpeed
+        paramMaterialInputGuidanceTable.FallingAcceleration      =   paramMaterialInput.Data.FallingAcceleration
+        paramMaterialInputGuidanceTable.FallingDeceleration      =   paramMaterialInput.Data.FallingDeceleration
+        paramMaterialInputGuidanceTable.FallingSpeed             =   paramMaterialInput.Data.FallingSpeed
+
+        paramMaterialInputGuidanceTable.PutOnTableInitialSpeed   =   paramMaterialInput.Data.PutOnTableInitialSpeed
+        paramMaterialInputGuidanceTable.PutOnTableAcceleration   =   paramMaterialInput.Data.FallingAcceleration
+        paramMaterialInputGuidanceTable.PutOnTableDeceleration   =   paramMaterialInput.Data.PutOnTableDeceleration
+        paramMaterialInputGuidanceTable.PutOnTableSpeed          =   paramMaterialInput.Data.PutOnTableSpeed
+       
+        paramMaterialInputGuidanceTable.MaterialInputDelay       =   paramMaterialInput.Data.MaterialInputDelay
+
+        var res JsonRes
+        
+
+        e := s.Proxy.Insert(paramMaterialInputGuidanceTable)
+        if e != nil {
+            fmt.Printf("paramMaterialInput data insert error!\n")
+            res = JsonRes{ReqId: paramMaterialInput.ReqId, ResCode: 2,Result:"paramMaterialInput data insert err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: paramMaterialInput.ReqId, ResCode: 0,Result:""}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ParamSendMaterialReq struct {
+    ReqId   int32               `json:"req_id"`
+    Data    datastorage.ParamSendMaterial  `json:"data"`
+}
+
+
+func (s *GinServer)ParamSendMaterial(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
+    var paramSendMaterial ParamSendMaterialReq
+    err := c.BindJSON(&paramSendMaterial)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: paramSendMaterial.ReqId, ResCode: 1,Result:"paramSendMaterial bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+
+        var paramSendMaterialTable datastorage.ParamSendMaterialTable
+        paramSendMaterialTable.SendMaterialSpeed             =   paramSendMaterial.Data.SendMaterialSpeed
+        paramSendMaterialTable.StopDelay         =   paramSendMaterial.Data.StopDelay 
+        paramSendMaterialTable.FitBenchmarkX         =   paramSendMaterial.Data.FitBenchmarkX
+        paramSendMaterialTable.FitBenchmarkY         =   paramSendMaterial.Data.FitBenchmarkY
+        paramSendMaterialTable.FitBenchmarkZ         =   paramSendMaterial.Data.FitBenchmarkZ
+        paramSendMaterialTable.FitBenchmarkR         =   paramSendMaterial.Data.FitBenchmarkR
+
+        paramSendMaterialTable.CameraHeight         =   paramSendMaterial.Data.CameraHeight
+        paramSendMaterialTable.FitCompensationX         =   paramSendMaterial.Data.FitCompensationX
+        paramSendMaterialTable.FitCompensationY         =   paramSendMaterial.Data.FitCompensationY
+        paramSendMaterialTable.FitCompensationZ         =   paramSendMaterial.Data.FitCompensationZ 
+        paramSendMaterialTable.FitCompensationR         =   paramSendMaterial.Data.FitCompensationR
+
+        paramSendMaterialTable.RemoveFitInitialSpeed  =   paramSendMaterial.Data.RemoveFitInitialSpeed
+        paramSendMaterialTable.RemoveFitAcceleration  =   paramSendMaterial.Data.RemoveFitAcceleration
+        paramSendMaterialTable.RemoveFitDeceleration  =   paramSendMaterial.Data.RemoveFitDeceleration
+        paramSendMaterialTable.RemoveFitSpeed  =   paramSendMaterial.Data.RemoveFitSpeed
+
+        paramSendMaterialTable.ReturnInitialSpeed      =   paramSendMaterial.Data.ReturnInitialSpeed
+        paramSendMaterialTable.ReturnAcceleration      =   paramSendMaterial.Data.ReturnAcceleration
+        paramSendMaterialTable.ReturnDeceleration      =   paramSendMaterial.Data.ReturnDeceleration
+        paramSendMaterialTable.ReturnSpeed             =   paramSendMaterial.Data.ReturnSpeed
+
+        paramSendMaterialTable.GotoPhotoInitialSpeed   =   paramSendMaterial.Data.GotoPhotoInitialSpeed
+        paramSendMaterialTable.GotoPhotoAcceleration   =   paramSendMaterial.Data.GotoPhotoAcceleration
+        paramSendMaterialTable.GotoPhotoDeceleration   =   paramSendMaterial.Data.GotoPhotoDeceleration
+        paramSendMaterialTable.GotoPhotoSpeed          =   paramSendMaterial.Data.GotoPhotoSpeed
+
+        paramSendMaterialTable.FitInitialSpeed   =   paramSendMaterial.Data.FitInitialSpeed
+        paramSendMaterialTable.FitAcceleration   =   paramSendMaterial.Data.FitAcceleration
+        paramSendMaterialTable.FitDeceleration   =   paramSendMaterial.Data.FitDeceleration
+        paramSendMaterialTable.FitSpeed          =   paramSendMaterial.Data.FitSpeed
+
+        paramSendMaterialTable.PutOnTableInitialSpeed   =   paramSendMaterial.Data.PutOnTableInitialSpeed
+        paramSendMaterialTable.PutOnTableAcceleration   =   paramSendMaterial.Data.PutOnTableAcceleration
+        paramSendMaterialTable.PutOnTableDeceleration   =   paramSendMaterial.Data.PutOnTableDeceleration
+        paramSendMaterialTable.PutOnTableSpeed          =   paramSendMaterial.Data.PutOnTableSpeed
+       
+        paramSendMaterialTable.BlowingHeight       =   paramSendMaterial.Data.BlowingHeight
+        paramSendMaterialTable.AdjustmentTimes       =   paramSendMaterial.Data.AdjustmentTimes
+
+        var res JsonRes
+        
+
+        e := s.Proxy.Insert(paramSendMaterialTable)
+        if e != nil {
+            fmt.Printf("paramSendMaterial data insert error!\n")
+            res = JsonRes{ReqId: paramSendMaterial.ReqId, ResCode: 2,Result:"paramSendMaterial data insert err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: paramSendMaterial.ReqId, ResCode: 0,Result:""}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
 }
