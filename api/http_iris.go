@@ -10,6 +10,7 @@ import (
     "github.com/smtp-http/tiango/config"
     "github.com/smtp-http/tiango/datastorage"
     _ "github.com/mattn/go-sqlite3"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 /*
@@ -42,7 +43,7 @@ type IrisServer struct {
 
 func (s *IrisServer) StartHttpServer() {
     s.App   = iris.New()
-    s.Proxy = datastorage.CreateStorageProxy("sqlite3", config.GetConfig().DbName)
+    s.Proxy = datastorage.CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
     if s.Proxy == nil {
         s.App.Logger().Fatalf("orm failed to initialized\n")
         return
@@ -79,7 +80,7 @@ func (s *IrisServer) StartHttpServer() {
 
 func Test() {
     app := iris.New()
-    orm, err := xorm.NewEngine("sqlite3", config.GetConfig().DbName)
+    orm, err := xorm.NewEngine(config.GetConfig().Database, config.GetConfig().DataSourceName)
     if err != nil {
         app.Logger().Fatalf("orm failed to initialized: %v", err)
     }

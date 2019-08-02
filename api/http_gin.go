@@ -16,7 +16,7 @@ func (s *GinServer)StartHttpServer() {
 
     // start database
 
-    s.Proxy = datastorage.CreateStorageProxy("sqlite3", config.GetConfig().DbName)
+    s.Proxy = datastorage.CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
     if s.Proxy == nil {
         fmt.Printf("orm failed to initialized\n")
         return
