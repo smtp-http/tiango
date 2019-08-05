@@ -90,6 +90,9 @@ type DpSize struct {
 type DpSizeTable struct {
 	Id 					int64 		
 
+	Result 				string 		`xorm:"Result"`
+
+	Position			string 		`xorm:"Position"`
 	DomSupplier 		string 		`xorm:"DomSupplier"`
 	DpSupplier 			string 		`xorm:"DpSupplier"`
 	ProductCn 			int32 		`xorm:"ProductCn"`
@@ -136,6 +139,9 @@ type DomSize struct {
 type DomSizeTable struct {
 	Id 					int64 		
 
+	Result 				string 		`xorm:"Result"`
+
+	Position			string 		`xorm:"Position"`
 	DomSupplier 		string 		`xorm:"DomSupplier"`
 	DpSupplier 			string 		`xorm:"DpSupplier"`
 	ProductCn 			int32 		`xorm:"ProductCn"`
