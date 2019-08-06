@@ -3,6 +3,7 @@ package datastorage
 import (
 	//"time"
 	//"reflect"
+	"time"
 )
 
 //===================================== Prodection info ===========================================
@@ -59,6 +60,8 @@ type ProductInformationTable struct {
 	SizeF 				float64 	`xorm:"SizeF"`
 	SizeG 				float64 	`xorm:"SizeG"`
 	SizeH				float64 	`xorm:"SizeH"`
+
+	Ctime 				time.Time 	`xorm:"created"`//`xorm:"not null default 'CURRENT_TIMESTAMP' TIMESTAMP created" json:"ctime"`
 }
 
 

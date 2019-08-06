@@ -6,10 +6,12 @@ import (
     "github.com/smtp-http/tiango/config"
     "github.com/smtp-http/tiango/datastorage"
     "net/http"
+    "github.com/smtp-http/tiango/dataanalysis"
 )
 
 type GinServer struct {
-    Proxy   *datastorage.StorageProxy
+    Proxy       *datastorage.StorageProxy
+    Analysiser  *dataanalysis.DataAnalysiser
 }
 
 func (s *GinServer)StartHttpServer() {
@@ -48,6 +50,9 @@ func (s *GinServer)StartHttpServer() {
     }
 
 
+    s.Analysiser = new(dataanalysis.DataAnalysiser)
+    s.Analysiser.SetProxy(s.Proxy)
+
 
     gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
     router := gin.Default()    //获得路由实例
@@ -72,6 +77,12 @@ func (s *GinServer)StartHttpServer() {
     // /api/v1/param-send-material
 
      router.POST("/api/" + config.GetConfig().Version +"/param-send-material", s.ParamSendMaterial)
+
+
+    // event
+    router.POST("/api/" + config.GetConfig().Version +"/add_event", s.AddEvent)
+    router.POST("/api/" + config.GetConfig().Version +"/del_event", s.DelEvent)
+    router.POST("/api/" + config.GetConfig().Version +"/get_event_list", s.AddEvent)
    
     //监听端口
     http.ListenAndServe(":" + config.GetConfig().HttpPort, router)
@@ -522,4 +533,29 @@ func (s *GinServer)ParamSendMaterial(c *gin.Context) {
         c.JSON(http.StatusOK, res)
         return
     }
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                           EVENT                                                             //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//======================================================== ADD EVENT ============================================================
+
+func (s *GinServer)AddEvent(c *gin.Context) {
+
+}
+
+//======================================================== DEL EVENT ============================================================
+
+func (s *GinServer)DelEvent(c *gin.Context) {
+    
+}
+
+
+//====================================================== GET EVENT LIST =========================================================
+func (s *GinServer)GetEventList(c *gin.Context) {
+    
 }

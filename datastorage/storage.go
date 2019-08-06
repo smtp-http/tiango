@@ -58,6 +58,14 @@ func (s *StorageProxy) Traversing() error {
 	}
 }
 
+func (s *StorageProxy) SqlQuery(sql string) ([]map[string][]byte,error) {
+	return s.engine.Query(sql)
+}
+
+func (s *StorageProxy) GetCount(sql string)(int64,error){
+	return s.engine.SQL(sql).Count()
+}
+
 
 func CreateStorageProxy(driverName string,dataSourceName string) *StorageProxy {
 	var err error
