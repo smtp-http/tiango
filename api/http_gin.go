@@ -24,6 +24,11 @@ func (s *GinServer)StartHttpServer() {
         return
     }
 
+    if err := s.Proxy.SyncTable(new(datastorage.SysParamTable)); err != nil {
+        fmt.Printf("Fail to sync database SysParamTable: %v\n", err)
+        return
+    }
+
     if err := s.Proxy.SyncTable(new(datastorage.ProductInformationTable)); err != nil {
         fmt.Printf("Fail to sync database ProductInformationTable: %v\n", err)
         return
@@ -52,8 +57,14 @@ func (s *GinServer)StartHttpServer() {
 
     s.Analysiser = new(dataanalysis.DataAnalysiser)
     s.Analysiser.SetProxy(s.Proxy)
-
-
+/*
+    result,e := s.Analysiser.GetProductInforYield(1564988410,1564989610)
+    if e != nil {
+        fmt.Println("+++  ",e)
+    } else {
+        fmt.Println("--- result: ",result)
+    }
+*/
     gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
     router := gin.Default()    //获得路由实例
 
@@ -83,6 +94,10 @@ func (s *GinServer)StartHttpServer() {
     router.POST("/api/" + config.GetConfig().Version +"/add_event", s.AddEvent)
     router.POST("/api/" + config.GetConfig().Version +"/del_event", s.DelEvent)
     router.POST("/api/" + config.GetConfig().Version +"/get_event_list", s.AddEvent)
+
+
+    // parameter
+    router.POST("/api/" + config.GetConfig().Version +"/update_tolerance", s.UpdateTolerance)
    
     //监听端口
     http.ListenAndServe(":" + config.GetConfig().HttpPort, router)
@@ -558,4 +573,16 @@ func (s *GinServer)DelEvent(c *gin.Context) {
 //====================================================== GET EVENT LIST =========================================================
 func (s *GinServer)GetEventList(c *gin.Context) {
     
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                           EVENT                                                             //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//===================================================== Update Tolerance ========================================================
+func (s *GinServer)UpdateTolerance(c *gin.Context) {
+
 }

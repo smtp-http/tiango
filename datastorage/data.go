@@ -6,6 +6,21 @@ import (
 	"time"
 )
 
+
+//===================================== Param =====================================================
+//Lower tolerance
+//Upper tolerance
+
+type ParamTolerance struct {
+	LowerTolerance 		float64 	`json:"LowerTolerance"`
+	UpperTolerance 		float64 	`json:"UpperTolerance"`
+}
+
+type SysParamTable struct {
+	LowerTolerance 		float64 	`xorm:"LowerTolerance"`
+	UpperTolerance 		float64 	`xorm:"UpperTolerance"`
+}
+
 //===================================== Prodection info ===========================================
 
 
