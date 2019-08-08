@@ -4,6 +4,7 @@ import (
 	//"time"
 	//"reflect"
 	"time"
+	"sync"
 )
 
 
@@ -17,8 +18,31 @@ type ParamTolerance struct {
 }
 
 type SysParamTable struct {
+	Id 					int64
+	//================== param tolerance ========================
 	LowerTolerance 		float64 	`xorm:"LowerTolerance"`
 	UpperTolerance 		float64 	`xorm:"UpperTolerance"`
+
+	//==================            =============================
+}
+
+
+/*sys param*/
+type SysParam struct {
+    Tolerance ParamTolerance
+
+}
+
+
+var param *SysParam
+var once_param sync.Once
+ 
+func GetSysParam() *SysParam {
+    once_param.Do(func() {
+        param = &SysParam{}
+
+    })
+    return param
 }
 
 //===================================== Prodection info ===========================================
@@ -357,3 +381,5 @@ type ParamSendMaterialTable struct {
 	BlowingHeight 				float64 	`xorm:"BlowingHeight"`
 	AdjustmentTimes 			int32 		`xorm:"AdjustmentTimes"`
 }
+
+

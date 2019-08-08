@@ -7,6 +7,7 @@ import (
     "github.com/go-xorm/xorm"
     //_ "github.com/mattn/go-sqlite3"
     _ "github.com/go-sql-driver/mysql"
+    "time"
 )
 
 // 银行账户
@@ -161,16 +162,108 @@ func deleteAccount(id int64) error {
     return err
 }
 
+
+type A_B_data struct{
+    a_b float64 `xorm:"A_B"`
+}
+
+
+func getDatas(engine *xorm.Engine) ( []A_B_data, error){
+    var a_b  []A_B_data
+    has,err := engine.Table("product_information_table").Select("A_B").Get(&a_b)
+    fmt.Println(has)
+    if err !=nil{
+        err = fmt.Errorf("GetMailBoxAddress:%v",err)
+        return nil,err
+    }
+
+
+    return a_b,nil
+}
+
+type ProductInformationTable struct {
+    Id      int64           
+    
+    
+    DomSupplier         string      `xorm:"DomSupplier"`
+    DpSupplier          string      `xorm:"DpSupplier"`
+    ProductCn           int32       `xorm:"ProductCn"`
+    LRstationDifference string      `xorm:"LRstationDifference"`
+
+    A_B                 float64     `xorm:"A_B"`
+    B_D                 float64     `xorm:"B_D"`
+    E_F                 float64     `xorm:"E_F"`
+    G_H                 float64     `xorm:"G_H"`
+
+
+    Result              bool        `xorm:"Result"`
+    Angle               float64     `xorm:"Angle"`
+    SizeA               float64     `xorm:"SizeA"`
+    SizeB               float64     `xorm:"SizeB"`
+    SizeC               float64     `xorm:"SizeC"`
+    SizeD               float64     `xorm:"SizeD"`
+    SizeE               float64     `xorm:"SizeE"`
+    SizeF               float64     `xorm:"SizeF"`
+    SizeG               float64     `xorm:"SizeG"`
+    SizeH               float64     `xorm:"SizeH"`
+
+    Ctime               time.Time   `xorm:"created"`//`xorm:"not null default 'CURRENT_TIMESTAMP' TIMESTAMP created" json:"ctime"`
+}
+
+
+type SysParamTable struct {
+    Id                  int64
+    //================== param tolerance ========================
+    LowerTolerance      float64     `xorm:"LowerTolerance"`
+    UpperTolerance      float64     `xorm:"UpperTolerance"`
+
+    //==================            =============================
+}
+
 func main(){
     x, err := xorm.NewEngine("mysql", "root:luxshare123@/mdata?charset=utf8")
     if err != nil {
         log.Fatalf("Fail to create engine: %v\n", err)
     }
 
+    var paramTb SysParamTable
+
+    x.Sync2(paramTb)
+
+    x.Id(1).Get(&paramTb)
+
+    fmt.Println("lower: ",paramTb.LowerTolerance,"       upper: ",paramTb.UpperTolerance)
+
+
+/*
+    var info []ProductInformationTable
+    er := x.Table("product_information_table").Select("A_B,B_D,E_F,G_H").Where("ctime between '2019-08-05 15:02:45' and '2019-08-06 15:10:10'").Find(&info)
+    
+    if er != nil {
+        fmt.Println(er)
+    } else {
+        fmt.Println(info)
+    }
+    */
+    //SELECT id ,name FROM `student` WHERE (id in (SELECT id FROM `studentinfo` WHERE (status = 2)))
     //sql := "SELECT * FROM `product_information_table` where ctime between '2019-08-05 15:08:45' and '2019-08-05 15:10:10';"
     sql := "SELECT count(*) FROM `product_information_table` where ctime between '2019-08-05 15:02:45' and '2019-08-06 15:10:10' and Result=1;"
     results, err := x.Query(sql)
     fmt.Println(results[0]["count(*)"])
+
+    //var A_B []float64
+    //sql = "select 'A_B' from `product_information_table` where ctime between '2019-08-05 15:02:45' and '2019-08-06 15:10:10'"
+    //results, err = x.Query(sql)
+    //x.Query(sql).Find(&A_B)
+   // x.Table("product_information_table").Select("A_B").Query().Find(&A_B)
+    //fmt.Println(results[0]["A_B"])
+    //A_B,e := getDatas(x)
+    //if e != nil {
+    //    fmt.Println(e)
+    //} else {
+    //    fmt.Println(A_B)
+    //}
+    
 
     count, err := x.SQL("SELECT count(*) FROM `product_information_table` where ctime between '2019-08-05 15:02:45' and '2019-08-06 15:10:10' and Result=0").Count()
     if err != nil{

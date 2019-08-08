@@ -67,6 +67,31 @@ func (s *StorageProxy) GetCount(sql string)(int64,error){
 }
 
 
+func (s *StorageProxy) LoadSysParam(param *SysParam)error {
+	var paramTb SysParamTable
+	s.engine.Id(1).Get(&paramTb)
+
+	param.Tolerance.LowerTolerance = paramTb.LowerTolerance
+	param.Tolerance.UpperTolerance = paramTb.UpperTolerance
+
+	return nil
+}
+
+func (s *StorageProxy) GetCpkCalculateData(strStart string,strEnd string) (error,[]ProductInformationTable){
+	var info []ProductInformationTable
+	whereInfo := fmt.Sprintf("ctime between '%s' and '%s'",strStart,strEnd)
+	
+    err := s.engine.Table("product_information_table").Select("A_B,B_D,E_F,G_H").Where(whereInfo).Find(&info)
+    
+    if err != nil {
+        fmt.Println(err)
+        return err,nil
+    } 
+
+    return nil,info
+}
+
+
 func CreateStorageProxy(driverName string,dataSourceName string) *StorageProxy {
 	var err error
 

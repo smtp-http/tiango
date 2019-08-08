@@ -5,7 +5,7 @@ import(
 	"errors"
 	"time"
 	"github.com/smtp-http/tiango/datastorage"
-	"errors"
+	"github.com/grd/statistics"
 )
 
 
@@ -50,6 +50,8 @@ func (a *DataAnalysiser)getProductInforOkCount(startTime int64,endTime int64)(in
 	strStart := time.Unix(startTime,0).Format("2006-01-02 15:04:05")
 	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
 
+
+
 	var strSql string
 
 	strSql = fmt.Sprintf("SELECT count(*) FROM `product_information_table` where ctime between '%s' and '%s' and Result=1",strStart,strEnd)
@@ -84,30 +86,210 @@ func (a *DataAnalysiser)GetProductInforYield(startTime int64,endTime int64)(floa
 }
 
 
-func average(xs []float64) (avg float64) {
+func average_ab(xs []datastorage.ProductInformationTable) (avg float64) {
 	sum := 0.0
 	switch len(xs) {
 		case 0:
 			avg = 0
 		default:
 			for _,v := range xs {
-				sum += v
+
+				sum += v.A_B
+			}
+			avg = sum / float64(len(xs))
+	}
+	return
+}
+func average_cd(xs []datastorage.ProductInformationTable) (avg float64) {
+	sum := 0.0
+	switch len(xs) {
+		case 0:
+			avg = 0
+		default:
+			for _,v := range xs {
+
+				sum += v.B_D
 			}
 			avg = sum / float64(len(xs))
 	}
 	return
 }
 
+func average_ef(xs []datastorage.ProductInformationTable) (avg float64) {
+	sum := 0.0
+	switch len(xs) {
+		case 0:
+			avg = 0
+		default:
+			for _,v := range xs {
 
-func getCpk(data []float64) (float64,error){
-	if len(data) < 32 {
-		return 0,errors.New("Insufficient data, at least 32 data required!")
+				sum += v.E_F
+			}
+			avg = sum / float64(len(xs))
 	}
-
-
+	return
 }
 
-func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)(float64,error) {
+func average_gh(xs []datastorage.ProductInformationTable) (avg float64) {
+	sum := 0.0
+	switch len(xs) {
+		case 0:
+			avg = 0
+		default:
+			for _,v := range xs {
 
-	return 0,nil
+				sum += v.G_H
+			}
+			avg = sum / float64(len(xs))
+	}
+	return
+}
+
+func variance(data statistics.Float64) float64 {
+	return statistics.Variance(&data)
+}
+
+
+
+func getCpk(data statistics.Float64,mean float64)(float64,error){
+
+	if data.Len() < 32 {
+		return 0,errors.New("Insufficient data")
+	}
+
+	sysParam := datastorage.GetSysParam()
+
+	varia := variance(data)
+
+	if varia == 0 {
+		return 0,errors.New("variance is zero!")
+	}
+
+	uperDiff := sysParam.Tolerance.UpperTolerance - mean
+	lowerDiff := mean - sysParam.Tolerance.LowerTolerance
+	fmt.Printf("++ mean: %f  uperDiff:%f lowerDiff:%f \n",mean,uperDiff,lowerDiff)
+	if uperDiff > lowerDiff {
+
+		return uperDiff/(3*varia),nil
+	} else {
+
+		return lowerDiff/(3*varia),nil
+	}
+}
+
+func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,error) {
+	cpks := make([]float64,4)
+
+	if a.Proxy == nil {
+		fmt.Printf("storage proxy is nil!\n")
+		return nil,errors.New("storage proxy is nil!")
+	}
+
+	strStart := time.Unix(startTime,0).Format("2006-01-02 15:04:05")
+	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
+
+	strEnd = "2019-08-08 14:49:20"
+
+	fmt.Printf("start: %s      end: %s\n",strStart,strEnd)
+
+    e,info := a.Proxy.GetCpkCalculateData(strStart,strEnd)
+    if e != nil {
+    	fmt.Println(e)
+    	return nil,e
+    }
+
+    dataLen := len(info)
+
+
+
+    if dataLen < 32 {
+    	fmt.Println("Insufficient data")
+    	return nil,errors.New("Insufficient data")
+    }
+//======================= A_B =============================
+
+    ab_data := make(statistics.Float64, dataLen)
+
+
+    i := 0
+    for i < dataLen {
+    	ab_data.SetValue(i,info[i].A_B)
+    	i = i + 1
+    }
+
+
+
+    mean := average_ab(info)
+
+    cpk,err := getCpk(ab_data,mean)
+    if(err != nil) {
+    	fmt.Printf("%v\n",err)
+    	return nil,err
+    }
+
+    fmt.Printf("++++++++ cpk: %f\n",cpk)
+
+    cpks[0] = cpk
+
+
+//======================= c_d =============================
+	bd_data := make(statistics.Float64, dataLen)
+
+    i = 0
+    for i < dataLen {
+    	bd_data.SetValue(i,info[i].B_D)
+    	i = i + 1
+    }
+
+    mean = average_cd(info)
+
+    cpk,err = getCpk(bd_data,mean)
+    if(err != nil) {
+    	fmt.Printf("%v\n",err)
+    	return nil,err
+    }
+
+    fmt.Printf("++++++++ cpk: %f\n",cpk)
+    cpks[1] = cpk
+
+
+//======================= e_f =============================
+    ef_data := make(statistics.Float64, dataLen)
+
+    i = 0
+    for i < dataLen {
+    	ef_data.SetValue(i,info[i].E_F)
+    	i = i + 1
+    }
+
+    mean = average_ef(info)
+
+    cpk,err = getCpk(ef_data,mean)
+    if(err != nil) {
+    	return nil,err
+    }
+
+    fmt.Printf("++++++++ cpk: %f\n",cpk)
+    cpks[2] = cpk
+
+//======================= g_h =============================
+    gh_data := make(statistics.Float64, dataLen)
+
+    i = 0
+    for i < dataLen {
+    	gh_data.SetValue(i,info[i].G_H)
+    	i = i + 1
+    }
+
+    mean = average_gh(info)
+
+    cpk,err = getCpk(gh_data,mean)
+    if(err != nil) {
+    	return nil,err
+    }
+
+    fmt.Printf("++++++++ cpk: %f\n",cpk)
+    cpks[3] = cpk
+
+	return cpks,nil
 }

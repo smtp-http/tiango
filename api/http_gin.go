@@ -54,9 +54,15 @@ func (s *GinServer)StartHttpServer() {
         return
     }
 
+    s.Proxy.LoadSysParam(datastorage.GetSysParam())
+    
+
 
     s.Analysiser = new(dataanalysis.DataAnalysiser)
     s.Analysiser.SetProxy(s.Proxy)
+
+
+
 /*
     result,e := s.Analysiser.GetProductInforYield(1564988410,1564989610)
     if e != nil {
@@ -65,6 +71,15 @@ func (s *GinServer)StartHttpServer() {
         fmt.Println("--- result: ",result)
     }
 */
+    if cpks,err := s.Analysiser.GetProductCpk(1564988410,1564989610); err != nil {
+        fmt.Printf("+++++++++ cpks:%v\n",cpks)
+        for i,v := range cpks {
+            fmt.Printf("cpk[%d] = %f\n",i,v)
+        }
+    } else {
+        fmt.Printf("=========== %v\n",err)
+    }
+
     gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
     router := gin.Default()    //获得路由实例
 
