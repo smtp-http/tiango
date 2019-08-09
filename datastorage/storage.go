@@ -74,6 +74,10 @@ func (s *StorageProxy) LoadSysParam(param *SysParam)error {
 	param.Tolerance.LowerTolerance = paramTb.LowerTolerance
 	param.Tolerance.UpperTolerance = paramTb.UpperTolerance
 
+	param.Mail.MailAddr = paramTb.MailAddr
+	param.Mail.Code = paramTb.Code
+	param.Mail.SmtpServer = paramTb.SmtpServer
+
 	return nil
 }
 

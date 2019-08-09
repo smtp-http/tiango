@@ -188,9 +188,9 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
 	strStart := time.Unix(startTime,0).Format("2006-01-02 15:04:05")
 	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
 
-	strEnd = "2019-08-08 14:49:20"
+	//strEnd = "2019-08-08 14:49:20"
 
-	fmt.Printf("start: %s      end: %s\n",strStart,strEnd)
+	//fmt.Printf("start: %s      end: %s\n",strStart,strEnd)
 
     e,info := a.Proxy.GetCpkCalculateData(strStart,strEnd)
     if e != nil {

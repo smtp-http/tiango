@@ -7,6 +7,8 @@ import (
     "github.com/smtp-http/tiango/datastorage"
     "net/http"
     "github.com/smtp-http/tiango/dataanalysis"
+    "github.com/smtp-http/tiango/utils"
+
 )
 
 type GinServer struct {
@@ -55,8 +57,11 @@ func (s *GinServer)StartHttpServer() {
     }
 
     s.Proxy.LoadSysParam(datastorage.GetSysParam())
-    
 
+    to := []string{"Keqiang.Zu@luxshare-ict.com"}
+    sender := utils.GetMailSender()
+    go sender.SendMail(to,"tudou tudou","woshidigua")
+    
 
     s.Analysiser = new(dataanalysis.DataAnalysiser)
     s.Analysiser.SetProxy(s.Proxy)

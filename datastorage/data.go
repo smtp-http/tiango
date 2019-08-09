@@ -17,20 +17,30 @@ type ParamTolerance struct {
 	UpperTolerance 		float64 	`json:"UpperTolerance"`
 }
 
+type ParamEmail struct {
+	MailAddr 			string 		`json:"MailAddr" xorm:"VARCHAR(30)"`
+	Code 				string 		`json:"Code" xorm:"VARCHAR(6)"`
+	SmtpServer 			string 		`json:"SmtpServer" xorm:"VARCHAR(30)"`
+}
+
 type SysParamTable struct {
 	Id 					int64
 	//================== param tolerance ========================
 	LowerTolerance 		float64 	`xorm:"LowerTolerance"`
 	UpperTolerance 		float64 	`xorm:"UpperTolerance"`
+	
 
-	//==================            =============================
+	//==================    email   =============================
+	MailAddr 			string 		`json:"MailAddr" xorm:"VARCHAR(30)"`
+	Code 				string 		`json:"Code" xorm:"VARCHAR(6)"`
+	SmtpServer 			string 		`json:"SmtpServer" xorm:"VARCHAR(30)"`
 }
 
 
 /*sys param*/
 type SysParam struct {
-    Tolerance ParamTolerance
-
+    Tolerance 	ParamTolerance
+    Mail 		ParamEmail
 }
 
 
