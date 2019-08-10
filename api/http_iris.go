@@ -43,7 +43,7 @@ type IrisServer struct {
 
 func (s *IrisServer) StartHttpServer() {
     s.App   = iris.New()
-    s.Proxy = datastorage.CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
+    s.Proxy = datastorage.GetStorageProxy()//CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
     if s.Proxy == nil {
         s.App.Logger().Fatalf("orm failed to initialized\n")
         return

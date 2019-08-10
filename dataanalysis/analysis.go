@@ -9,9 +9,9 @@ import(
 )
 
 
-
 type DataAnalysiser struct{
-	Proxy   *datastorage.StorageProxy
+	Proxy   		*datastorage.StorageProxy
+	
 }
 
 

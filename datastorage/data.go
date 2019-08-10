@@ -34,6 +34,9 @@ type SysParamTable struct {
 	MailAddr 			string 		`json:"MailAddr" xorm:"VARCHAR(30)"`
 	Code 				string 		`json:"Code" xorm:"VARCHAR(6)"`
 	SmtpServer 			string 		`json:"SmtpServer" xorm:"VARCHAR(30)"`
+
+	//=================== ThresholdValue 
+	YieldThresholdValue 		float64 	`xorm:"YieldThresholdValue"`  //良率阈值
 }
 
 
@@ -46,7 +49,7 @@ type SysParam struct {
 
 var param *SysParam
 var once_param sync.Once
- 
+
 func GetSysParam() *SysParam {
     once_param.Do(func() {
         param = &SysParam{}
@@ -54,6 +57,16 @@ func GetSysParam() *SysParam {
     })
     return param
 }
+
+//////////////////////////////////////// event ////////////////////////////////////////////////////
+type JobBaseElement struct {
+	Id 					int64
+	JobName 			string 		`xorm:"JobName"`
+	TriggerCycle 		uint64 		`xorm:"TriggerCycle"`	//周期
+	CycleUnit 			string 		`xorm:"CycleUnit"`	// 小时，天，周等等
+	TriggerTimePoint 	string 		`xorm:"TriggerTimePoint"`	// 如果单位是小时，则此处为分钟；如果单位是天，则此处为小时，以此类推......
+}
+
 
 //===================================== Prodection info ===========================================
 

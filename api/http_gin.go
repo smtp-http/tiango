@@ -7,7 +7,7 @@ import (
     "github.com/smtp-http/tiango/datastorage"
     "net/http"
     "github.com/smtp-http/tiango/dataanalysis"
-    "github.com/smtp-http/tiango/utils"
+    //"github.com/smtp-http/tiango/utils"
 
 )
 
@@ -20,47 +20,11 @@ func (s *GinServer)StartHttpServer() {
 
     // start database
 
-    s.Proxy = datastorage.CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
+    s.Proxy = datastorage.GetStorageProxy()//CreateStorageProxy(config.GetConfig().Database, config.GetConfig().DataSourceName)
     if s.Proxy == nil {
         fmt.Printf("orm failed to initialized\n")
         return
     }
-
-    if err := s.Proxy.SyncTable(new(datastorage.SysParamTable)); err != nil {
-        fmt.Printf("Fail to sync database SysParamTable: %v\n", err)
-        return
-    }
-
-    if err := s.Proxy.SyncTable(new(datastorage.ProductInformationTable)); err != nil {
-        fmt.Printf("Fail to sync database ProductInformationTable: %v\n", err)
-        return
-    }
-
-    if err := s.Proxy.SyncTable(new(datastorage.DpSizeTable)); err != nil {
-        fmt.Printf("Fail to sync database DpSizeTable: %v\n", err)
-        return
-    }
-
-    if err := s.Proxy.SyncTable(new(datastorage.DomSizeTable)); err != nil {
-        fmt.Printf("Fail to sync database DomSizeTable: %v\n", err)
-        return
-    }
-    
-    if err := s.Proxy.SyncTable(new(datastorage.ParamMaterialInputGuidanceTable)); err != nil {
-        fmt.Printf("Fail to sync database ParamMaterialInputGuidanceTable: %v\n", err)
-        return
-    }
-
-    if err := s.Proxy.SyncTable(new(datastorage.ParamSendMaterialTable)); err != nil {
-        fmt.Printf("Fail to sync database ParamSendMaterialTable: %v\n", err)
-        return
-    }
-
-    s.Proxy.LoadSysParam(datastorage.GetSysParam())
-
-    to := []string{"Keqiang.Zu@luxshare-ict.com"}
-    sender := utils.GetMailSender()
-    go sender.SendMail(to,"tudou tudou","woshidigua")
     
 
     s.Analysiser = new(dataanalysis.DataAnalysiser)

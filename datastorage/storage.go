@@ -7,6 +7,8 @@ import (
 	"github.com/go-xorm/xorm"
 	"errors"
 	"fmt"
+	"sync"
+	"github.com/smtp-http/tiango/config"
 )
 
 type DatabaseInfo struct {
@@ -18,6 +20,10 @@ type DatabaseInfo struct {
 type StorageProxy struct {
 	dbInfo DatabaseInfo
 	engine *xorm.Engine
+}
+
+func (s *StorageProxy) GetEngine() *xorm.Engine {
+	return s.engine
 }
 
 
@@ -96,6 +102,76 @@ func (s *StorageProxy) GetCpkCalculateData(strStart string,strEnd string) (error
 }
 
 
+var proxy *StorageProxy
+var once_proxy sync.Once
+ 
+func GetStorageProxy() *StorageProxy {
+
+    once_proxy.Do(func() {
+    	driverName := config.GetConfig().Database
+    	dataSourceName := config.GetConfig().DataSourceName
+
+    	fmt.Println("========== driverr name: ",driverName)
+    	fmt.Println("========== dataSourceName: ",dataSourceName)
+
+        proxy = &StorageProxy{}
+        var err error
+        proxy.engine, err = xorm.NewEngine(driverName,dataSourceName)
+		if err != nil {
+			fmt.Printf("Fail to create hrengine: %v\n", err)
+			proxy = nil
+			return
+		}
+
+		proxy.dbInfo.DriverName = driverName
+		proxy.dbInfo.DataSourceName = dataSourceName
+
+		if err := proxy.SyncTable(new(SysParamTable)); err != nil {
+        	fmt.Printf("Fail to sync database SysParamTable: %v\n", err)
+        	return
+	    }
+
+	    if err := proxy.SyncTable(new(ProductInformationTable)); err != nil {
+	        fmt.Printf("Fail to sync database ProductInformationTable: %v\n", err)
+	        return
+	    }
+
+	    if err := proxy.SyncTable(new(DpSizeTable)); err != nil {
+	        fmt.Printf("Fail to sync database DpSizeTable: %v\n", err)
+	        return
+	    }
+
+	    if err := proxy.SyncTable(new(DomSizeTable)); err != nil {
+	        fmt.Printf("Fail to sync database DomSizeTable: %v\n", err)
+	        return
+	    }
+	    
+	    if err := proxy.SyncTable(new(ParamMaterialInputGuidanceTable)); err != nil {
+	        fmt.Printf("Fail to sync database ParamMaterialInputGuidanceTable: %v\n", err)
+	        return
+	    }
+
+	    if err := proxy.SyncTable(new(ParamSendMaterialTable)); err != nil {
+	        fmt.Printf("Fail to sync database ParamSendMaterialTable: %v\n", err)
+	        return
+	    }
+
+	    if err := proxy.SyncTable(new(JobBaseElement)); err != nil {
+        	fmt.Printf("Fail to sync database EventBaseElement: %v\n", err)
+        	return
+    	}
+
+	    proxy.LoadSysParam(GetSysParam())
+
+    })
+
+    
+
+    return proxy
+}
+
+//config.GetConfig().Database, config.GetConfig().DataSourceName
+/*
 func CreateStorageProxy(driverName string,dataSourceName string) *StorageProxy {
 	var err error
 
@@ -114,4 +190,4 @@ func CreateStorageProxy(driverName string,dataSourceName string) *StorageProxy {
 
 	return proxy
 }
-
+*/
