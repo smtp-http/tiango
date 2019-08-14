@@ -42,8 +42,9 @@ type SysParamTable struct {
 
 /*sys param*/
 type SysParam struct {
-    Tolerance 	ParamTolerance
-    Mail 		ParamEmail
+    Tolerance 					ParamTolerance
+    Mail 						ParamEmail
+    YieldThresholdValue 		float64
 }
 
 
@@ -58,7 +59,26 @@ func GetSysParam() *SysParam {
     return param
 }
 
-//////////////////////////////////////// event ////////////////////////////////////////////////////
+//////////////////////////////////////// event //////////////////////////////////////////////////
+type Event struct {
+	Id 					int64
+	EventName 			string 		`xorm:"EventName"`
+}
+
+////////////////////////////////////// subscriber ///////////////////////////////////////////////
+type Subscriber struct {
+	Id 					int64
+	SubscriberMail 			string 		`xorm:"SubscriberMail"`
+}
+
+//////////////////////////////////// ev_subscriber //////////////////////////////////////////////
+type EvSubscriberTable struct {
+	Id 					int64
+	SubscriberId 		int64 		`xorm:"index"`
+	EventId 			int64 		`xorm:"index"`
+}
+
+//////////////////////////////////////// job ////////////////////////////////////////////////////
 type JobBaseElement struct {
 	Id 					int64
 	JobName 			string 		`xorm:"JobName"`
@@ -406,3 +426,10 @@ type ParamSendMaterialTable struct {
 }
 
 
+type ConcentricRateStatistical  struct {
+	Count 		int   	`json:"Count"`
+	AB_count	int32 	`json:"A_B"`
+    CD_count	int32 	`json:"C_D"`
+    EF_count	int32 	`json:"E_F"`
+    GH_count	int32 	`json:"G_H"`
+}

@@ -13,7 +13,7 @@ import (
 
 type GinServer struct {
     Proxy       *datastorage.StorageProxy
-    Analysiser  *dataanalysis.DataAnalysiser
+    //Analysiser  *dataanalysis.DataAnalysiser
 }
 
 func (s *GinServer)StartHttpServer() {
@@ -27,10 +27,16 @@ func (s *GinServer)StartHttpServer() {
     }
     
 
-    s.Analysiser = new(dataanalysis.DataAnalysiser)
-    s.Analysiser.SetProxy(s.Proxy)
+    //s.Analysiser = new(dataanalysis.DataAnalysiser)
+    //s.Analysiser.SetProxy(s.Proxy)
 
 
+    sche := dataanalysis.GetJobScheduler()
+    if sche == nil {
+        fmt.Println("get job scheduler error!")
+        return
+    }
+    sche.AddJob(nil)
 
 /*
     result,e := s.Analysiser.GetProductInforYield(1564988410,1564989610)
@@ -39,7 +45,7 @@ func (s *GinServer)StartHttpServer() {
     } else {
         fmt.Println("--- result: ",result)
     }
-*/
+
     if cpks,err := s.Analysiser.GetProductCpk(1564988410,1564989610); err != nil {
         fmt.Printf("+++++++++ cpks:%v\n",cpks)
         for i,v := range cpks {
@@ -48,7 +54,7 @@ func (s *GinServer)StartHttpServer() {
     } else {
         fmt.Printf("=========== %v\n",err)
     }
-
+*/
     gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
     router := gin.Default()    //获得路由实例
 
@@ -67,11 +73,11 @@ func (s *GinServer)StartHttpServer() {
 
     //   /api/v1/param-material-input-guidance
 
-    router.POST("/api/" + config.GetConfig().Version +"/param-material-input-guidance", s.ParamMaterialInputGuidance)
+    router.POST("/api/" + config.GetConfig().Version +"/param_material_input_guidance", s.ParamMaterialInputGuidance)
 
     // /api/v1/param-send-material
 
-     router.POST("/api/" + config.GetConfig().Version +"/param-send-material", s.ParamSendMaterial)
+     router.POST("/api/" + config.GetConfig().Version +"/param_send_material", s.ParamSendMaterial)
 
 
     // event
@@ -82,6 +88,11 @@ func (s *GinServer)StartHttpServer() {
 
     // parameter
     router.POST("/api/" + config.GetConfig().Version +"/update_tolerance", s.UpdateTolerance)
+    router.POST("/api/" + config.GetConfig().Version +"/sys_param_set", s.SysParamSet)
+    router.POST("/api/" + config.GetConfig().Version +"/sys_param_get", s.SysParamGet)
+
+    // data analysis
+    router.POST("/api/" + config.GetConfig().Version +"/concentric_rate", s.GetConcentricRateStatistical)
    
     //监听端口
     http.ListenAndServe(":" + config.GetConfig().HttpPort, router)
@@ -94,7 +105,7 @@ func Middleware(c *gin.Context) {
 type JsonRes struct {
     ReqId   int32       `json:"req_id"`
     ResCode int32       `json:"rescode"`
-    Result  string      `json:"result"`
+    Result  interface{}      `json:"result"`
 }
 
 
@@ -476,7 +487,7 @@ func (s *GinServer)ParamSendMaterial(c *gin.Context) {
     } else {
 
         var paramSendMaterialTable datastorage.ParamSendMaterialTable
-        paramSendMaterialTable.SendMaterialSpeed             =   paramSendMaterial.Data.SendMaterialSpeed
+        paramSendMaterialTable.SendMaterialSpeed   =   paramSendMaterial.Data.SendMaterialSpeed
         paramSendMaterialTable.StopDelay         =   paramSendMaterial.Data.StopDelay 
         paramSendMaterialTable.FitBenchmarkX         =   paramSendMaterial.Data.FitBenchmarkX
         paramSendMaterialTable.FitBenchmarkY         =   paramSendMaterial.Data.FitBenchmarkY
@@ -533,6 +544,146 @@ func (s *GinServer)ParamSendMaterial(c *gin.Context) {
         return
     }
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type SysParam struct {
+    LowerTolerance      float64     `json:"LowerTolerance"`
+    UpperTolerance      float64     `json:"UpperTolerance"`
+    MailAddr            string      `json:"MailAddr"`
+    Code                string      `json:"Code"`
+    SmtpServer          string      `json:"SmtpServer"`
+    YieldThresholdValue         float64     `json:"YieldThresholdValue"`
+}
+
+
+type SysParamSetReq struct {
+    ReqId   int32                   `json:"req_id"`
+    Data    SysParam                `json:"data"`
+}
+
+
+
+func (s *GinServer)SysParamSet(c *gin.Context) {
+
+    c.Header("Access-Control-Allow-Origin", "*")
+    var sysParam SysParamSetReq
+    err := c.BindJSON(&sysParam)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: sysParam.ReqId, ResCode: 1,Result:"bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+        var paramTable datastorage.SysParamTable
+        paramTable.LowerTolerance            =   sysParam.Data.LowerTolerance
+        paramTable.UpperTolerance             =   sysParam.Data.UpperTolerance 
+        paramTable.MailAddr              =   sysParam.Data.MailAddr
+        paramTable.Code    =   sysParam.Data.Code
+
+        paramTable.SmtpServer                    =   sysParam.Data.SmtpServer
+        paramTable.YieldThresholdValue                    =   sysParam.Data.YieldThresholdValue
+
+
+        var res JsonRes
+        
+        entine := s.Proxy.GetEngine()
+
+        _,e := entine.Id(1).Update(paramTable)
+        if e != nil {
+            fmt.Printf("sysparam data insert error!\n")
+            res = JsonRes{ReqId: sysParam.ReqId, ResCode: 2,Result:"sysparam data insert err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: sysParam.ReqId, ResCode: 0,Result:""}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
+}
+
+
+type SysParamGetReq struct {
+    ReqId   int32                   `json:"req_id"`
+    //Data    []int32                `json:"data"`
+}
+
+func (s *GinServer)SysParamGet(c *gin.Context) {
+
+    c.Header("Access-Control-Allow-Origin", "*")
+    var sysParamGet SysParamGetReq
+    err := c.BindJSON(&sysParamGet)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: sysParamGet.ReqId, ResCode: 1,Result:"bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+        var paramTable datastorage.SysParamTable
+
+        var res JsonRes
+        
+
+        _,e := s.Proxy.GetSysParam(1,&paramTable)
+        if e != nil {
+            fmt.Printf("sysparam data get error!   %v\n",e)
+            res = JsonRes{ReqId: sysParamGet.ReqId, ResCode: 2,Result:"sysparam data get err!"}
+            return
+        }
+
+        var param SysParam
+
+        param.LowerTolerance      = paramTable.LowerTolerance
+        param.UpperTolerance      = paramTable.UpperTolerance
+        param.MailAddr            = paramTable.MailAddr
+        param.Code                = paramTable.Code
+        param.SmtpServer          = paramTable.SmtpServer
+        param.YieldThresholdValue = paramTable.YieldThresholdValue
+
+        res = JsonRes{ReqId: sysParamGet.ReqId, ResCode: 0,Result:param}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
+}
+
+
+type StatisticalDuration struct {
+    Duration       int32   `json:"duration"`   
+}
+
+type ConcentricRateReq struct {
+    ReqId   int32                   `json:"req_id"`
+    Data    StatisticalDuration     `json:"data"`
+}
+func (s *GinServer)GetConcentricRateStatistical(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
+    var concentricRate ConcentricRateReq
+    err := c.BindJSON(&concentricRate)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: concentricRate.ReqId, ResCode: 1,Result:"bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+        var res JsonRes
+        analysis := dataanalysis.GetDataAnalysiser()
+        crs,err := analysis.GetConcentricRateStatisticalResult(concentricRate.Data.Duration)
+        if err != nil {
+            fmt.Printf("ConcentricRateStatistical data get error!\n")
+            res = JsonRes{ReqId: concentricRate.ReqId, ResCode: 2,Result:"ConcentricRateStatistical data get err!"}
+            return
+        }
+
+        res = JsonRes{ReqId: concentricRate.ReqId, ResCode: 0,Result:*crs}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
+}
+
 
 
 

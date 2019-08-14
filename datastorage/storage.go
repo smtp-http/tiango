@@ -64,6 +64,11 @@ func (s *StorageProxy) Traversing() error {
 	}
 }
 
+func (s *StorageProxy) GetSysParam (id int64,data *SysParamTable)(bool,error){
+	return s.engine.Id(id).Get(data)
+}
+
+
 func (s *StorageProxy) SqlQuery(sql string) ([]map[string][]byte,error) {
 	return s.engine.Query(sql)
 }
@@ -84,6 +89,8 @@ func (s *StorageProxy) LoadSysParam(param *SysParam)error {
 	param.Mail.Code = paramTb.Code
 	param.Mail.SmtpServer = paramTb.SmtpServer
 
+	param.YieldThresholdValue = paramTb.YieldThresholdValue
+
 	return nil
 }
 
@@ -100,6 +107,45 @@ func (s *StorageProxy) GetCpkCalculateData(strStart string,strEnd string) (error
 
     return nil,info
 }
+
+
+type SubscriberGroup struct {
+    EventId int64 `xorm:"extends"`
+    SubscriberId int64
+}
+
+func (s *SubscriberGroup) GetSubscriberId() int64 {
+    return s.SubscriberId
+}
+
+func (s *StorageProxy) GetEventSubscriberMails(eventname string) []string {
+
+	var subIds []int64 
+
+	strNames := fmt.Sprintf("EventName = '%s'",eventname)
+
+	err :=  s.engine.Table("event").Select("id").Where(strNames).Find(&subIds)
+	if err != nil {
+		fmt.Println("Get event  id err: ",err)
+		return nil
+	}
+
+	fmt.Println(subIds)
+
+	var submails []string
+
+	strSubids := fmt.Sprintf("id in (select subscriber_id from ev_subscriber_table where event_id = %d)",subIds[0])
+
+	err = s.engine.Table("subscriber").Select("SubscriberMail").Where(strSubids).Find(&submails)
+	if err != nil {
+		fmt.Println("Get subscriber mails err: ",err)
+		return nil
+	}
+
+	return submails
+}
+
+
 
 
 var proxy *StorageProxy
@@ -157,9 +203,24 @@ func GetStorageProxy() *StorageProxy {
 	    }
 
 	    if err := proxy.SyncTable(new(JobBaseElement)); err != nil {
-        	fmt.Printf("Fail to sync database EventBaseElement: %v\n", err)
+        	fmt.Printf("Fail to sync database JobBaseElement: %v\n", err)
         	return
     	}
+
+		if err := proxy.SyncTable(new(Event)); err != nil {
+			fmt.Printf("Fail to sync database EventTable: %v\n", err)
+			return
+		}
+
+		if err := proxy.SyncTable(new(Subscriber)); err != nil {
+			fmt.Printf("Fail to sync database SubscriberTable: %v\n", err)
+			return
+		}
+
+		if err := proxy.SyncTable(new(EvSubscriberTable)); err != nil {
+			fmt.Printf("Fail to sync database EvSubscriberTable: %v\n", err)
+			return
+		}
 
 	    proxy.LoadSysParam(GetSysParam())
 

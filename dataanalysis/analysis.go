@@ -6,6 +6,7 @@ import(
 	"time"
 	"github.com/smtp-http/tiango/datastorage"
 	"github.com/grd/statistics"
+	"sync"
 )
 
 
@@ -14,10 +15,22 @@ type DataAnalysiser struct{
 	
 }
 
+var analysiser *DataAnalysiser
+var once_analysiser sync.Once
+ 
+func GetDataAnalysiser() *DataAnalysiser {
+    once_analysiser.Do(func() {
+        analysiser = &DataAnalysiser{}
+        analysiser.Proxy = datastorage.GetStorageProxy()
+    })
+    return analysiser
+}
 
+
+/*
 func (a *DataAnalysiser)SetProxy(proxy *datastorage.StorageProxy) {
 	a.Proxy = proxy
-}
+}*/
 
 func (a *DataAnalysiser)getProductInforCount(startTime int64,endTime int64)(int64,error){    //startTime: Unix timestamp
 	if a.Proxy == nil {
@@ -292,4 +305,68 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
     cpks[3] = cpk
 
 	return cpks,nil
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func GetStartTimeBefore (duration int32) int64 {
+
+	if duration > 2 * 24 * 60 {
+		duration = 2 * 24 * 60
+	}
+
+	tm := time.Now().Unix()
+	tm = tm - int64(duration * 60)
+
+	return tm
+}
+
+func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*datastorage.ConcentricRateStatistical,error) {
+	startTime := GetStartTimeBefore(duration)
+	endTime := time.Now().Unix()
+
+	strStart := time.Unix(startTime,0).Format("2006-01-02 15:04:05")
+	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
+
+
+	err,info := a.Proxy.GetCpkCalculateData(strStart,strEnd)
+    if err != nil {
+    	fmt.Println(err)
+    	return nil,err
+    }
+
+    param := datastorage.GetSysParam()
+    
+    
+    var crs datastorage.ConcentricRateStatistical
+    crs.Count = len(info)
+
+    crs.AB_count = 0
+    crs.CD_count = 0
+    crs.EF_count = 0
+    crs.GH_count = 0
+
+    for _,v := range info {
+    	if  v.A_B < param.Tolerance.LowerTolerance || v.A_B > param.Tolerance.UpperTolerance {
+    		crs.AB_count += 1
+    	} 
+
+    	if v.B_D < param.Tolerance.LowerTolerance || v.B_D > param.Tolerance.UpperTolerance {
+    		crs.CD_count += 1
+    	} 
+
+    	if v.E_F < param.Tolerance.LowerTolerance || v.E_F > param.Tolerance.UpperTolerance {
+    		crs.EF_count += 1
+    	} 
+
+    	if v.G_H < param.Tolerance.LowerTolerance || v.G_H > param.Tolerance.UpperTolerance {
+    		crs.GH_count += 1
+    	} 
+    }
+    
+
+    return &crs,nil
 }
