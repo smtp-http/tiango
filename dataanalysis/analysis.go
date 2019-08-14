@@ -366,7 +366,6 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
     		crs.GH_count += 1
     	} 
     }
-    
 
     return &crs,nil
 }
