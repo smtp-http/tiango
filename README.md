@@ -1,2 +1,2 @@
 # tiango
-a golang data storage framework
+a golang data storage & analysis framework
