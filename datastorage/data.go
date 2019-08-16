@@ -175,7 +175,7 @@ type DpSize struct {
 type DpSizeTable struct {
 	Id 					int64 		
 
-	Result 				string 		`xorm:"Result"`
+	Result 				bool 		`xorm:"Result"`   
 
 	Position			string 		`xorm:"Position"`
 	DomSupplier 		string 		`xorm:"DomSupplier"`
@@ -224,7 +224,7 @@ type DomSize struct {
 type DomSizeTable struct {
 	Id 					int64 		
 
-	Result 				string 		`xorm:"Result"`
+	Result 				bool 		`xorm:"Result"`
 
 	Position			string 		`xorm:"Position"`
 	DomSupplier 		string 		`xorm:"DomSupplier"`
@@ -426,10 +426,16 @@ type ParamSendMaterialTable struct {
 }
 
 
+
 type ConcentricRateStatistical  struct {
 	Count 		int   	`json:"Count"`
 	AB_count	int32 	`json:"A_B"`
+	AB_Cpk 		float64 `json:"AB_Cpk"`
     CD_count	int32 	`json:"C_D"`
+    CD_Cpk 		float64 `json:"CD_Cpk"`
     EF_count	int32 	`json:"E_F"`
+    EF_Cpk 		float64 `json:"EF_Cpk"`
     GH_count	int32 	`json:"G_H"`
+    GH_Cpk 		float64 `json:"GH_Cpk"`
+    Yield 		float64 `json:"Yield"`
 }

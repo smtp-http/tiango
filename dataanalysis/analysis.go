@@ -332,24 +332,31 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
 	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
 
 
-	err,info := a.Proxy.GetCpkCalculateData(strStart,strEnd)
-    if err != nil {
-    	fmt.Println(err)
-    	return nil,err
-    }
+	er,info := a.Proxy.GetCpkCalculateData(strStart,strEnd) 
+	if er != nil {
+		fmt.Println(er)
+    	return nil,er
+	}
+   
 
     param := datastorage.GetSysParam()
     
     
     var crs datastorage.ConcentricRateStatistical
-    crs.Count = len(info)
+    length := len(info)
+    crs.Count = length
 
     crs.AB_count = 0
     crs.CD_count = 0
     crs.EF_count = 0
     crs.GH_count = 0
 
-    for _,v := range info {
+	ab_data := make(statistics.Float64, length)
+	cd_data := make(statistics.Float64, length)
+	ef_data := make(statistics.Float64, length)
+	gh_data := make(statistics.Float64, length)
+
+    for k,v := range info {
     	if  v.A_B < param.Tolerance.LowerTolerance || v.A_B > param.Tolerance.UpperTolerance {
     		crs.AB_count += 1
     	} 
@@ -365,7 +372,53 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
     	if v.G_H < param.Tolerance.LowerTolerance || v.G_H > param.Tolerance.UpperTolerance {
     		crs.GH_count += 1
     	} 
+
+    	ab_data.SetValue(k,info[k].A_B)
+    	cd_data.SetValue(k,info[k].B_D)
+    	ef_data.SetValue(k,info[k].E_F)
+    	gh_data.SetValue(k,info[k].G_H)
+
+    }
+
+
+    cpk,err := getCpk(ab_data,average_ab(info))
+    if(err != nil) {
+    	fmt.Println("get ab cpk err: ",err)
+    	return nil,err
+    }
+
+    crs.AB_Cpk = cpk
+    cpk,err = getCpk(cd_data,average_cd(info))
+    if(err != nil) {
+    	fmt.Println("get cd cpk err: ",err)
+    	return nil,err
+    }
+
+    crs.CD_Cpk = cpk
+
+
+	cpk,err = getCpk(ef_data,average_ef(info))
+    if(err != nil) {
+    	fmt.Println("get ef cpk err: ",err)
+    	return nil,err
+    }
+
+    crs.EF_Cpk = cpk
+
+    cpk,err = getCpk(gh_data,average_gh(info))
+    if(err != nil) {
+    	fmt.Println("get gh cpk err: ",err)
+    	return nil,err
+    }
+
+    crs.GH_Cpk = cpk
+
+    crs.Yield,err = a.GetProductInforYield(startTime,endTime)
+    if err != nil{
+    	fmt.Println("get yield err: ",err)
+    	return nil,err
     }
 
     return &crs,nil
 }
+

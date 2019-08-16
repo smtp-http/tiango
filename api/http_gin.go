@@ -94,6 +94,7 @@ func (s *GinServer)StartHttpServer() {
     // data analysis
     router.POST("/api/" + config.GetConfig().Version +"/concentric_rate", s.GetConcentricRateStatistical)
    
+   
     //监听端口
     http.ListenAndServe(":" + config.GetConfig().HttpPort, router)
 }
@@ -159,6 +160,7 @@ func (s *GinServer)Productinformation(c *gin.Context) {
         if e != nil {
             fmt.Printf("ProInfo data insert error!\n")
             res = JsonRes{ReqId: proInfo.ReqId, ResCode: 2,Result:"Proinfo data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -174,7 +176,7 @@ func (s *GinServer)Productinformation(c *gin.Context) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 type DpSizeReq struct {
     ReqId   int32               `json:"req_id"`
-    Result  string              `json:"Result"`
+    Result  bool              `json:"Result"`
     Data    datastorage.DpSize  `json:"data"`
 }
 
@@ -220,6 +222,7 @@ func (s *GinServer)DpsizeLeft(c *gin.Context) {
         if e != nil {
             fmt.Printf("DpSize data insert error!\n")
             res = JsonRes{ReqId: dpsize.ReqId, ResCode: 2,Result:"DpSize data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -272,6 +275,7 @@ func (s *GinServer)DpsizeRight(c *gin.Context) {
         if e != nil {
             fmt.Printf("DpSize data insert error!\n")
             res = JsonRes{ReqId: dpsize.ReqId, ResCode: 2,Result:"DpSize data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -287,7 +291,7 @@ func (s *GinServer)DpsizeRight(c *gin.Context) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 type DomSizeReq struct {
     ReqId   int32               `json:"req_id"`
-    Result  string              `json:"Result"`
+    Result  bool              `json:"Result"`
     Data    datastorage.DomSize  `json:"data"`
 }
 
@@ -332,6 +336,7 @@ func (s *GinServer)DomsizeLeft(c *gin.Context) {
         if e != nil {
             fmt.Printf("domsize data insert error!\n")
             res = JsonRes{ReqId: domsize.ReqId, ResCode: 2,Result:"domsize data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -383,6 +388,7 @@ func (s *GinServer)DomsizeRight(c *gin.Context) {
         if e != nil {
             fmt.Printf("domsize data insert error!\n")
             res = JsonRes{ReqId: domsize.ReqId, ResCode: 2,Result:"domsize data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -454,6 +460,7 @@ func (s *GinServer)ParamMaterialInputGuidance(c *gin.Context) {
         if e != nil {
             fmt.Printf("paramMaterialInput data insert error!\n")
             res = JsonRes{ReqId: paramMaterialInput.ReqId, ResCode: 2,Result:"paramMaterialInput data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -535,6 +542,7 @@ func (s *GinServer)ParamSendMaterial(c *gin.Context) {
         if e != nil {
             fmt.Printf("paramSendMaterial data insert error!\n")
             res = JsonRes{ReqId: paramSendMaterial.ReqId, ResCode: 2,Result:"paramSendMaterial data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -594,6 +602,7 @@ func (s *GinServer)SysParamSet(c *gin.Context) {
         if e != nil {
             fmt.Printf("sysparam data insert error!\n")
             res = JsonRes{ReqId: sysParam.ReqId, ResCode: 2,Result:"sysparam data insert err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
@@ -674,6 +683,7 @@ func (s *GinServer)GetConcentricRateStatistical(c *gin.Context) {
         if err != nil {
             fmt.Printf("ConcentricRateStatistical data get error!\n")
             res = JsonRes{ReqId: concentricRate.ReqId, ResCode: 2,Result:"ConcentricRateStatistical data get err!"}
+            c.JSON(http.StatusOK, res)
             return
         }
 
