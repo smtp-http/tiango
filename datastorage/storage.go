@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 	"github.com/smtp-http/tiango/config"
+	"log"
 )
 
 type DatabaseInfo struct {
@@ -20,6 +21,45 @@ type DatabaseInfo struct {
 type StorageProxy struct {
 	dbInfo DatabaseInfo
 	engine *xorm.Engine
+}
+
+func init() {
+	fmt.Println("__________$%^&*()_+++++++++++++++")
+
+	loader := config.GetLoader()
+	loader.Load("./config.json",config.GetConfig())
+
+	var paramTable SysParamTable
+
+    paramTable.LowerTolerance            =  -5.0
+    paramTable.UpperTolerance             =   +5.1
+    paramTable.MailAddr              =   "user@163.com"
+    paramTable.Code    =   "123456"
+
+    paramTable.SmtpServer                    =   "smtp@163.com"
+    paramTable.YieldThresholdValue                    =   0.98
+
+	engine, er := xorm.NewEngine(config.GetConfig().Database, config.GetConfig().DataSourceName)
+    if er != nil {
+        log.Fatalf("Fail to create engine: %v\n", er)
+        return
+    }
+
+    engine.Sync2(&paramTable)
+
+	has, err := engine.Table("sys_param_table").Exist() 
+    if err == nil {
+        if !has {
+            _, e := engine.Insert(&paramTable) 
+            if e != nil {
+                fmt.Println("set param error, inster new record err: ",e)
+            }
+        } 
+    } else {
+    	fmt.Println("get exist err: ",err)
+    }
+
+
 }
 
 func (s *StorageProxy) GetEngine() *xorm.Engine {
@@ -79,9 +119,11 @@ func (s *StorageProxy) GetCount(sql string)(int64,error){
 
 
 func (s *StorageProxy) LoadSysParam(param *SysParam)error {
+	var l sync.Mutex
 	var paramTb SysParamTable
 	s.engine.Id(1).Get(&paramTb)
 
+	l.Lock()
 	param.Tolerance.LowerTolerance = paramTb.LowerTolerance
 	param.Tolerance.UpperTolerance = paramTb.UpperTolerance
 
@@ -90,6 +132,8 @@ func (s *StorageProxy) LoadSysParam(param *SysParam)error {
 	param.Mail.SmtpServer = paramTb.SmtpServer
 
 	param.YieldThresholdValue = paramTb.YieldThresholdValue
+
+	l.Unlock()
 
 	return nil
 }

@@ -598,6 +598,7 @@ func (s *GinServer)SysParamSet(c *gin.Context) {
         
         entine := s.Proxy.GetEngine()
 
+
         _,e := entine.Id(1).Update(paramTable)
         if e != nil {
             fmt.Printf("sysparam data insert error!\n")
@@ -605,6 +606,8 @@ func (s *GinServer)SysParamSet(c *gin.Context) {
             c.JSON(http.StatusOK, res)
             return
         }
+
+        s.Proxy.LoadSysParam(datastorage.GetSysParam())
 
         res = JsonRes{ReqId: sysParam.ReqId, ResCode: 0,Result:""}
     //若返回json数据，可以直接使用gin封装好的JSON方法

@@ -5,7 +5,7 @@ import(
 	"errors"
 	"time"
 	"github.com/smtp-http/tiango/datastorage"
-	"github.com/grd/statistics"
+	"math"
 	"sync"
 )
 
@@ -98,6 +98,7 @@ func (a *DataAnalysiser)GetProductInforYield(startTime int64,endTime int64)(floa
 	return result,nil
 }
 
+/*
 
 func average_ab(xs []datastorage.ProductInformationTable) (avg float64) {
 	sum := 0.0
@@ -157,40 +158,44 @@ func average_gh(xs []datastorage.ProductInformationTable) (avg float64) {
 	}
 	return
 }
+*/
 
-func variance(data statistics.Float64) float64 {
-	return statistics.Variance(&data)
+
+func GetCpk(data []float64,lowerTolerance float64,upperTolerance float64) (error,float64)	 {
+	dataLen := len(data)
+	if  dataLen < 32 {
+		return errors.New("data is not enough!"),0
+	}
+
+	var sums float64 = 0
+
+	for _,v := range data {
+		sums += v
+	}
+
+
+	average := sums / float64(dataLen)
+
+
+	sums = 0
+
+	for _,v := range data {
+		sums += math.Pow(v - average, 2)
+	}
+
+	standard_deviations := math.Sqrt(sums / (float64(dataLen) - 1))
+
+
+	return nil,math.Min((upperTolerance - average)/(3*standard_deviations),(average - lowerTolerance)/(3 * standard_deviations))
 }
 
 
-
-func getCpk(data statistics.Float64,mean float64)(float64,error){
-
-	if data.Len() < 32 {
-		return 0,errors.New("Insufficient data")
-	}
-
-	sysParam := datastorage.GetSysParam()
-
-	varia := variance(data)
-
-	if varia == 0 {
-		return 0,errors.New("variance is zero!")
-	}
-
-	uperDiff := sysParam.Tolerance.UpperTolerance - mean
-	lowerDiff := mean - sysParam.Tolerance.LowerTolerance
-	fmt.Printf("++ mean: %f  uperDiff:%f lowerDiff:%f \n",mean,uperDiff,lowerDiff)
-	if uperDiff > lowerDiff {
-
-		return uperDiff/(3*varia),nil
-	} else {
-
-		return lowerDiff/(3*varia),nil
-	}
-}
 
 func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,error) {
+	sysParam := datastorage.GetSysParam()
+	lowerTolerance := sysParam.Tolerance.LowerTolerance
+	upperTolerance := sysParam.Tolerance.UpperTolerance
+
 	cpks := make([]float64,4)
 
 	if a.Proxy == nil {
@@ -221,20 +226,17 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
     }
 //======================= A_B =============================
 
-    ab_data := make(statistics.Float64, dataLen)
+    data := make([]float64, dataLen)
 
 
     i := 0
     for i < dataLen {
-    	ab_data.SetValue(i,info[i].A_B)
+    	data[i] = info[i].A_B
     	i = i + 1
     }
 
 
-
-    mean := average_ab(info)
-
-    cpk,err := getCpk(ab_data,mean)
+    err,cpk := GetCpk(data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Printf("%v\n",err)
     	return nil,err
@@ -246,17 +248,15 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
 
 
 //======================= c_d =============================
-	bd_data := make(statistics.Float64, dataLen)
 
     i = 0
     for i < dataLen {
-    	bd_data.SetValue(i,info[i].B_D)
+    	data[i] = info[i].B_D
     	i = i + 1
     }
 
-    mean = average_cd(info)
 
-    cpk,err = getCpk(bd_data,mean)
+    err,cpk = GetCpk(data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Printf("%v\n",err)
     	return nil,err
@@ -267,17 +267,15 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
 
 
 //======================= e_f =============================
-    ef_data := make(statistics.Float64, dataLen)
 
     i = 0
     for i < dataLen {
-    	ef_data.SetValue(i,info[i].E_F)
+    	data[i] = info[i].E_F
     	i = i + 1
     }
 
-    mean = average_ef(info)
 
-    cpk,err = getCpk(ef_data,mean)
+    err,cpk = GetCpk(data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	return nil,err
     }
@@ -286,17 +284,15 @@ func (a *DataAnalysiser)GetProductCpk(startTime int64,endTime int64)([]float64,e
     cpks[2] = cpk
 
 //======================= g_h =============================
-    gh_data := make(statistics.Float64, dataLen)
 
     i = 0
     for i < dataLen {
-    	gh_data.SetValue(i,info[i].G_H)
+    	data[i] = info[i].G_H
     	i = i + 1
     }
 
-    mean = average_gh(info)
 
-    cpk,err = getCpk(gh_data,mean)
+    err,cpk = GetCpk(data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	return nil,err
     }
@@ -340,6 +336,8 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
    
 
     param := datastorage.GetSysParam()
+    lowerTolerance := param.Tolerance.LowerTolerance
+	upperTolerance := param.Tolerance.UpperTolerance
     
     
     var crs datastorage.ConcentricRateStatistical
@@ -351,10 +349,10 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
     crs.EF_count = 0
     crs.GH_count = 0
 
-	ab_data := make(statistics.Float64, length)
-	cd_data := make(statistics.Float64, length)
-	ef_data := make(statistics.Float64, length)
-	gh_data := make(statistics.Float64, length)
+	ab_data := make([]float64, length)
+	cd_data := make([]float64, length)
+	ef_data := make([]float64, length)
+	gh_data := make([]float64, length)
 
     for k,v := range info {
     	if  v.A_B < param.Tolerance.LowerTolerance || v.A_B > param.Tolerance.UpperTolerance {
@@ -373,22 +371,24 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
     		crs.GH_count += 1
     	} 
 
-    	ab_data.SetValue(k,info[k].A_B)
-    	cd_data.SetValue(k,info[k].B_D)
-    	ef_data.SetValue(k,info[k].E_F)
-    	gh_data.SetValue(k,info[k].G_H)
+    	ab_data[k] = info[k].A_B
+    	cd_data[k] = info[k].B_D
+    	ef_data[k] = info[k].E_F
+    	gh_data[k] = info[k].G_H
 
     }
 
 
-    cpk,err := getCpk(ab_data,average_ab(info))
+    err,cpk := GetCpk(ab_data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Println("get ab cpk err: ",err)
     	return nil,err
     }
 
     crs.AB_Cpk = cpk
-    cpk,err = getCpk(cd_data,average_cd(info))
+
+
+    err,cpk = GetCpk(cd_data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Println("get cd cpk err: ",err)
     	return nil,err
@@ -397,7 +397,7 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
     crs.CD_Cpk = cpk
 
 
-	cpk,err = getCpk(ef_data,average_ef(info))
+	err,cpk = GetCpk(ef_data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Println("get ef cpk err: ",err)
     	return nil,err
@@ -405,7 +405,7 @@ func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*dat
 
     crs.EF_Cpk = cpk
 
-    cpk,err = getCpk(gh_data,average_gh(info))
+    err,cpk = GetCpk(gh_data,lowerTolerance,upperTolerance)
     if(err != nil) {
     	fmt.Println("get gh cpk err: ",err)
     	return nil,err
