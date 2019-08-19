@@ -98,67 +98,7 @@ func (a *DataAnalysiser)GetProductInforYield(startTime int64,endTime int64)(floa
 	return result,nil
 }
 
-/*
 
-func average_ab(xs []datastorage.ProductInformationTable) (avg float64) {
-	sum := 0.0
-	switch len(xs) {
-		case 0:
-			avg = 0
-		default:
-			for _,v := range xs {
-
-				sum += v.A_B
-			}
-			avg = sum / float64(len(xs))
-	}
-	return
-}
-func average_cd(xs []datastorage.ProductInformationTable) (avg float64) {
-	sum := 0.0
-	switch len(xs) {
-		case 0:
-			avg = 0
-		default:
-			for _,v := range xs {
-
-				sum += v.B_D
-			}
-			avg = sum / float64(len(xs))
-	}
-	return
-}
-
-func average_ef(xs []datastorage.ProductInformationTable) (avg float64) {
-	sum := 0.0
-	switch len(xs) {
-		case 0:
-			avg = 0
-		default:
-			for _,v := range xs {
-
-				sum += v.E_F
-			}
-			avg = sum / float64(len(xs))
-	}
-	return
-}
-
-func average_gh(xs []datastorage.ProductInformationTable) (avg float64) {
-	sum := 0.0
-	switch len(xs) {
-		case 0:
-			avg = 0
-		default:
-			for _,v := range xs {
-
-				sum += v.G_H
-			}
-			avg = sum / float64(len(xs))
-	}
-	return
-}
-*/
 
 
 func GetCpk(data []float64,lowerTolerance float64,upperTolerance float64) (error,float64)	 {
@@ -318,6 +258,67 @@ func GetStartTimeBefore (duration int32) int64 {
 	tm = tm - int64(duration * 60)
 
 	return tm
+}
+
+
+type DomAndDpsizeCount struct {
+	DomCount 	int   	`json:"DomCount"`
+	DomOkTotal 	int32 	`json:"DomOkTotal"`
+	DpCount 	int   	`json:"DpCount"`
+	DpOkTotal 	int32 	`json:"DpOkTotal"`
+}
+
+func (a *DataAnalysiser)GetDomsizeAndDpsizeCountResult(duration int32) (*DomAndDpsizeCount,error) {
+	startTime := GetStartTimeBefore(duration)
+	endTime := time.Now().Unix()
+
+	strStart := time.Unix(startTime,0).Format("2006-01-02 15:04:05")
+	strEnd := time.Unix(endTime,0).Format("2006-01-02 15:04:05")
+
+
+	var domAndDpsizeCount DomAndDpsizeCount
+
+	strSql := fmt.Sprintf("SELECT count(*) FROM `dom_size_table` where ctime between '%s' and '%s'",strStart,strEnd)
+
+
+	count,err := a.Proxy.GetCount(strSql)
+	if err != nil {
+		return nil,err
+	}
+
+	domAndDpsizeCount.DomCount = int(count)
+
+	strSql = fmt.Sprintf("SELECT count(*) FROM `dom_size_table` where ctime between '%s' and '%s' and Result=1",strStart,strEnd)
+
+
+	count,err = a.Proxy.GetCount(strSql)
+	if err != nil {
+		return nil,err
+	}
+
+	domAndDpsizeCount.DomOkTotal = int32(count)
+
+	strSql = fmt.Sprintf("SELECT count(*) FROM `dp_size_table` where ctime between '%s' and '%s'",strStart,strEnd)
+
+
+	count,err = a.Proxy.GetCount(strSql)
+	if err != nil {
+		return nil,err
+	}
+
+	domAndDpsizeCount.DpCount = int(count)
+
+	strSql = fmt.Sprintf("SELECT count(*) FROM `dp_size_table` where ctime between '%s' and '%s' and Result=1",strStart,strEnd)
+
+
+	count,err = a.Proxy.GetCount(strSql)
+	if err != nil {
+		return nil,err
+	}
+
+	domAndDpsizeCount.DpOkTotal = int32(count)
+
+	return &domAndDpsizeCount,nil
 }
 
 func (a *DataAnalysiser)GetConcentricRateStatisticalResult(duration int32) (*datastorage.ConcentricRateStatistical,error) {

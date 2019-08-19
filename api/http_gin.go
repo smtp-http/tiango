@@ -93,6 +93,7 @@ func (s *GinServer)StartHttpServer() {
 
     // data analysis
     router.POST("/api/" + config.GetConfig().Version +"/concentric_rate", s.GetConcentricRateStatistical)
+    router.POST("/api/" + config.GetConfig().Version +"/domsize_dpsize_count",s.GetDomsizeAndDpsizeCount)
    
    
     //监听端口
@@ -698,6 +699,34 @@ func (s *GinServer)GetConcentricRateStatistical(c *gin.Context) {
 }
 
 
+
+
+func (s *GinServer)GetDomsizeAndDpsizeCount(c *gin.Context) {
+    c.Header("Access-Control-Allow-Origin", "*")
+    var concentricRate ConcentricRateReq
+    err := c.BindJSON(&concentricRate)
+    if err != nil {
+        fmt.Printf("==== %v\n",err)
+        res := JsonRes{ReqId: concentricRate.ReqId, ResCode: 1,Result:"bind json error"}
+        c.JSON(200,res)
+        return
+    } else {
+        var res JsonRes
+        analysis := dataanalysis.GetDataAnalysiser()
+        dpdom,err := analysis.GetDomsizeAndDpsizeCountResult(concentricRate.Data.Duration)
+        if err != nil {
+            fmt.Printf("DomsizeAndDpsizeCount data get error: %v\n",err)
+            res = JsonRes{ReqId: concentricRate.ReqId, ResCode: 2,Result:"DomsizeAndDpsizeCount data get err!"}
+            c.JSON(http.StatusOK, res)
+            return
+        }
+
+        res = JsonRes{ReqId: concentricRate.ReqId, ResCode: 0,Result:*dpdom}
+    //若返回json数据，可以直接使用gin封装好的JSON方法
+        c.JSON(http.StatusOK, res)
+        return
+    }
+}
 
 
 

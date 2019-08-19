@@ -194,7 +194,7 @@ type DpSizeTable struct {
 	DX 					float64 	`xorm:"DX"`
 	DY 					float64 	`xorm:"DY"`
 	DR 					float64 	`xorm:"DR"`
-
+	Ctime 				time.Time 	`xorm:"created"`
 }
 
 //=========================== Dom size ===========================================
@@ -244,6 +244,7 @@ type DomSizeTable struct {
 	DY 					float64 	`xorm:"DY"`
 	DR 					float64 	`xorm:"DR"`
 
+	Ctime 				time.Time 	`xorm:"created"`
 }
 
 //=========================== Environment ==========================================

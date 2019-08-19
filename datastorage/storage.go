@@ -275,24 +275,4 @@ func GetStorageProxy() *StorageProxy {
     return proxy
 }
 
-//config.GetConfig().Database, config.GetConfig().DataSourceName
-/*
-func CreateStorageProxy(driverName string,dataSourceName string) *StorageProxy {
-	var err error
 
-	proxy := new(StorageProxy)
-	proxy.engine, err = xorm.NewEngine(driverName,dataSourceName)
-	if err != nil {
-		fmt.Printf("Fail to create hrengine: %v\n", err)
-		return nil
-	}
-
-	proxy.dbInfo.DriverName = driverName
-	proxy.dbInfo.DataSourceName = dataSourceName
-
-	//日志打印SQL
-	//proxy.engine.ShowSQL(true)
-
-	return proxy
-}
-*/
