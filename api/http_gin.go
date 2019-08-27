@@ -3,12 +3,10 @@ package api
 import (
     "fmt"
     "github.com/gin-gonic/gin"
-    "github.com/smtp-http/tiango/config"
-    "github.com/smtp-http/tiango/datastorage"
+    "../config"
+    "../datastorage"
     "net/http"
-    "github.com/smtp-http/tiango/dataanalysis"
-    //"github.com/smtp-http/tiango/utils"
-
+    "../dataanalysis"
 )
 
 type GinServer struct {
