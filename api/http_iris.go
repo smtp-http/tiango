@@ -7,8 +7,8 @@ import (
 
     "github.com/go-xorm/xorm"
     "github.com/kataras/iris"
-    "github.com/smtp-http/tiango/config"
-    "github.com/smtp-http/tiango/datastorage"
+    "../config"
+    "../datastorage"
     _ "github.com/mattn/go-sqlite3"
     _ "github.com/go-sql-driver/mysql"
 )
